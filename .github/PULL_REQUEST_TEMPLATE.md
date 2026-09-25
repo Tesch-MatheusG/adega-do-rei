@@ -7,9 +7,6 @@
 - [ ] Documentação
 - [ ] Refatoração / ajuste técnico
 
-## Requisitos relacionados
-<!-- Ex: RF03, RN05, UC01 -->
-
 ## Checklist
 - [ ] O código foi testado localmente
 - [ ] Não há dados sensíveis (senhas, chaves, .env) commitados
