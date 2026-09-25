@@ -49,7 +49,7 @@ Documentação detalhada disponível em [`docs/`](./docs):
 ## Como rodar o projeto
 
 # Clonar o repositório
-git clone https://github.com/usuario/adega-do-rei.git
+git clone https://github.com/Tesch-MatheusG/adega-do-rei
 cd adega-do-rei
 
 # Front-end
