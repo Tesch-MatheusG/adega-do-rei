@@ -48,20 +48,20 @@ Documentação detalhada disponível em [`docs/`](./docs):
 
 ## Como rodar o projeto
 
-# Clonar o repositório
+### Clonar o repositório
 git clone https://github.com/Tesch-MatheusG/adega-do-rei
 cd adega-do-rei
 
-# Front-end
-cd src/frontend
-npm install
-npm run dev
+### Front-end
+cd src/frontend     
+npm install     
+npm run dev 
 
-# Back-end (em outro terminal)
-cd src/backend
+### Back-end (em outro terminal)
+cd src/backend  
 npm install
-# configurar o .env com as credenciais do MySQL (ver .env.example)
-npx sequelize db:migrate
+### Configurar o .env com as credenciais do MySQL (ver .env.example)
+npx sequelize db:migrate    
 npm run dev
 
 ## Equipe
