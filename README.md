@@ -13,10 +13,13 @@ A solução é hospedada em serviços de nuvem com custo compatível com o porte
 
 ## Tecnologias
 
-- **Front-end:** React + TypeScript + Vite
-- **Back-end:** *(definir: Python — Flask/FastAPI)*
-- **Banco de dados:** *(definir: PostgreSQL / Supabase)*
-- **Infraestrutura:** hospedagem em nuvem (camada gratuita/serverless)
+- **Front-end:** React + TypeScript + Tailwind CSS + Vite
+- **Back-end:** *Node.js + Express (arquitetura MVC — Routes, Controllers, Models)
+- **ORM / Banco de dados:** Sequelize + MySQL
+- **Infraestrutura:** AWS (RDS, S3, Elastic Beanstalk/EC2, EventBridge + Lambda), priorizando camada gratuita
+- **Autenticação e Segurança:** JWT (JSON Web Token) + bcrypt (hash de senhas)
+- **Validação:** express-validator
+- **Ferramentas de Banco:** DBeaver (Cliente MySQL)
 
 ## Estrutura do repositório
 
@@ -45,7 +48,21 @@ Documentação detalhada disponível em [`docs/`](./docs):
 
 ## Como rodar o projeto
 
-> *Instruções a serem detalhadas conforme o setup do back-end for definido.*
+# Clonar o repositório
+git clone https://github.com/usuario/adega-do-rei.git
+cd adega-do-rei
+
+# Front-end
+cd src/frontend
+npm install
+npm run dev
+
+# Back-end (em outro terminal)
+cd src/backend
+npm install
+# configurar o .env com as credenciais do MySQL (ver .env.example)
+npx sequelize db:migrate
+npm run dev
 
 ## Equipe
 
