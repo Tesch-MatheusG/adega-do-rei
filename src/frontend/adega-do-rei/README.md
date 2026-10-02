@@ -90,4 +90,4 @@ página ou componente.
 
 Definidas em `tailwind.config.js` (`wine`, `gold`, `bg`, `surface`...) e nas fontes
 `Cormorant Garamond` (títulos) e `Sora` (texto), carregadas em `index.html` —
-seguindo o protótipo desenvolvido no Figma: [link do Figma].
+seguindo o protótipo desenvolvido no Figma: https://www.figma.com/design/npP3g7CpN1qqvweMNU4Z6O/Adega-do-Rei-Website?node-id=0-1&t=ifOsVVZm7LxXZskb-1.
