@@ -53,7 +53,7 @@ git clone https://github.com/Tesch-MatheusG/adega-do-rei
 cd adega-do-rei
 
 ### Front-end
-cd src/frontend     
+cd src/frontend/adega-do-rei     
 npm install     
 npm run dev 
 
