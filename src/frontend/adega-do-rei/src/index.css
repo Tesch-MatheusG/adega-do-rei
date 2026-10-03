@@ -1,0 +1,37 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-bg text-ink font-sans antialiased;
+  }
+  h1, h2, h3 { @apply font-serif; }
+}
+
+@layer components {
+  .container-page { @apply max-w-container mx-auto px-6; }
+
+  .btn {
+    @apply inline-flex items-center justify-center rounded px-5 py-2.5 text-sm font-medium
+           transition-colors disabled:opacity-50 disabled:cursor-not-allowed
+           focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold;
+  }
+  .btn-primary { @apply btn bg-wine text-ink hover:bg-wine-hover; }
+  .btn-outline { @apply btn border border-border text-ink hover:border-gold; }
+  .btn-block { @apply w-full; }
+
+  .field-label { @apply block text-sm text-muted mb-1.5; }
+  .input {
+    @apply w-full rounded border border-border bg-surface-2 text-ink placeholder:text-muted
+           px-3.5 py-2.5 text-sm outline-none transition-colors
+           focus:border-gold focus-visible:outline focus-visible:outline-2 focus-visible:outline-gold/60;
+  }
+
+  .card { @apply bg-surface border border-border rounded overflow-hidden; }
+
+  .badge { @apply inline-flex items-center rounded px-2.5 py-1 text-xs font-medium; }
+  .badge-success { @apply badge bg-success/15 text-success; }
+  .badge-danger { @apply badge bg-danger/15 text-danger; }
+  .badge-warning { @apply badge bg-warning/15 text-warning; }
+}
