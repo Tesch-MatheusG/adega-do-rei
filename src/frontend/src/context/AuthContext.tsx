@@ -20,7 +20,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const token = localStorage.getItem(TOKEN_KEY);
     if (!token) { setCarregando(false); return; }
 
-    authService.me(token)
+    authService.me()
       .then(setUsuario)
       .catch(() => localStorage.removeItem(TOKEN_KEY))
       .finally(() => setCarregando(false));
