@@ -1,9 +1,9 @@
 import axios from 'axios';
 
-// NÃO USADO NESTA ETAPA: esta entrega roda com dados simulados
-// (ver src/services/). Este arquivo fica pronto para quando o backend
-// (Node/Express) for integrado na próxima fase — produtosService.ts e
-// authService.ts passarão a usar este cliente `api` no lugar do mockDb.
+// Cliente HTTP usado por produtosService.ts e authService.ts para falar
+// com o backend (Node/Express + MySQL). VITE_API_URL vem do .env (local)
+// ou é configurada no ambiente de produção (ex: Render) apontando para a
+// URL pública da API.
 export const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL ?? 'http://localhost:3000/api',
 });

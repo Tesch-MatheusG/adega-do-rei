@@ -5,6 +5,7 @@ import { criarProduto } from '../../services/produtosService';
 export default function NovoProduto() {
   const navigate = useNavigate();
   const [form, setForm] = useState({ nome: '', categoria: '', preco: '', volumeMl: '', descricao: '', estoque: '' });
+  const [erro, setErro] = useState('');
   const [enviando, setEnviando] = useState(false);
 
   function campo<K extends keyof typeof form>(chave: K, valor: string) {
@@ -13,16 +14,23 @@ export default function NovoProduto() {
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
+    setErro('');
     setEnviando(true);
-    await criarProduto({
-      nome: form.nome,
-      categoria: form.categoria,
-      preco: Number(form.preco),
-      volumeMl: form.volumeMl ? Number(form.volumeMl) : null,
-      descricao: form.descricao || null,
-      estoque: form.estoque ? Number(form.estoque) : 0,
-    });
-    navigate('/admin/estoque');
+    try {
+      await criarProduto({
+        nome: form.nome,
+        categoria: form.categoria,
+        preco: Number(form.preco),
+        volumeMl: form.volumeMl ? Number(form.volumeMl) : null,
+        descricao: form.descricao || null,
+        estoque: form.estoque ? Number(form.estoque) : 0,
+      });
+      navigate('/admin/estoque');
+    } catch (err) {
+      setErro(err instanceof Error ? err.message : 'Não foi possível cadastrar o produto.');
+    } finally {
+      setEnviando(false);
+    }
   }
 
   return (
@@ -57,6 +65,8 @@ export default function NovoProduto() {
           <label className="field-label">Descrição</label>
           <textarea className="input" rows={3} value={form.descricao} onChange={(e) => campo('descricao', e.target.value)} />
         </div>
+
+        {erro && <p className="text-danger text-sm">{erro}</p>}
 
         <button type="submit" disabled={enviando} className="btn-primary">
           {enviando ? 'Salvando...' : 'Cadastrar Produto'}

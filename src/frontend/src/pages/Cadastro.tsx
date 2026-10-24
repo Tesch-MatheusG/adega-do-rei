@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { register } from '../services/authService';
+import { isValidCPF, isAdult } from '../lib/cpf';
 
 export default function Cadastro() {
   const navigate = useNavigate();
@@ -18,6 +19,12 @@ export default function Cadastro() {
 
     if (form.senha !== form.senha2) { setErro('As senhas não coincidem.'); return; }
     if (!form.maior18) { setErro('É necessário declarar que é maior de 18 anos.'); return; }
+
+    // Checagem rápida no navegador, antes de gastar uma requisição —
+    // o backend valida de novo de qualquer forma, então isso é só UX.
+    const cpfLimpo = form.cpf.replace(/\D/g, '');
+    if (!isValidCPF(cpfLimpo)) { setErro('CPF inválido.'); return; }
+    if (!isAdult(form.dataNascimento)) { setErro('É necessário ter 18 anos ou mais.'); return; }
 
     setEnviando(true);
     try {
