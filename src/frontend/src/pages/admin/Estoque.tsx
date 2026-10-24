@@ -17,8 +17,12 @@ export default function Estoque() {
     const quantidade = Number(valor);
     if (!valor || !Number.isInteger(quantidade) || quantidade <= 0) return;
 
-    await registrarEntradaEstoque(id, quantidade);
-    carregar();
+    try {
+      await registrarEntradaEstoque(id, quantidade);
+      carregar();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Não foi possível registrar a entrada.');
+    }
   }
 
   return (
