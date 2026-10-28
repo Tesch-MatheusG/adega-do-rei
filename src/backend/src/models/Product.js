@@ -27,4 +27,12 @@ const Product = sequelize.define(
   { tableName: 'produtos' }
 );
 
+// Transformação na saída: o MySQL devolve DECIMAL como texto ("89.90").
+// Convertemos para número para o JSON bater com o tipo Produto do frontend.
+Product.prototype.toJSON = function toJSON() {
+  const dados = { ...this.get() };
+  dados.preco = Number(dados.preco);
+  return dados;
+};
+
 module.exports = Product;
