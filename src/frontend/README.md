@@ -10,14 +10,11 @@ Projeto Integrado — Desenvolvimento de Interfaces de Usuário para Web
 ## Descrição
 
 Interface web de reservas e gestão para a **Adega do Rei**, comércio local de bebidas
-alcoólicas. A aplicação permite que clientes consultem o catálogo e reservem produtos
-para retirada, e que o administrador (dono do estabelecimento) gerencie produtos e
-estoque por um painel próprio.
+alcoólicas. Clientes consultam o catálogo, reservam produtos para retirada e acompanham
+suas reservas; o administrador (dono) gerencia produtos, estoque e reservas por um painel próprio.
 
-Nesta etapa da entrega, a aplicação roda **sem depender de um backend**: todos os
-dados vêm de uma camada de simulação (`src/services/`), que será substituída por
-chamadas reais à API REST (Node/Express/MySQL, já em desenvolvimento em paralelo)
-numa fase posterior do projeto.
+A aplicação consome a API REST do backend (`../backend`, Node/Express + MySQL) através de
+`src/services/`.
 
 ## Tecnologias utilizadas
 
@@ -25,66 +22,85 @@ numa fase posterior do projeto.
 - Vite
 - Tailwind CSS
 - React Router DOM
+- Axios
 
 ## Como instalar e rodar localmente
 
+O backend precisa estar rodando (ver o README em `../backend`) ou você pode apontar para a
+API publicada.
+
 ```bash
 npm install
+cp .env.example .env   # VITE_API_URL: http://localhost:3000/api (local) ou a URL da API na nuvem
 npm run dev
 ```
 
-Acesse `http://localhost:5173`. Não é necessário configurar `.env` nem subir nenhum
-backend — a aplicação já funciona sozinha com dados simulados.
+Acesse `http://localhost:5173`.
 
 ### Contas de teste (login)
 
-| Perfil | E-mail | Senha |
-|---|---|---|
-| Cliente | cliente@teste.com | Senha123 |
-| Administrador | admin@adegadorei.com | Admin@1234 |
-
-Também é possível criar uma conta nova pela tela de Cadastro — ela fica salva no
-`localStorage` do navegador enquanto não há backend.
+| Perfil | Como obter |
+|---|---|
+| Administrador | e-mail/senha definidos em `ADMIN_EMAIL`/`ADMIN_SENHA` no `.env` do backend (criado com `npm run seed:admin`) |
+| Cliente | criado pela tela de Cadastro (precisa ser maior de 18 anos e ter CPF válido) |
 
 ## Estrutura do projeto
 
 ```
 src/
 ├── components/      # Header, Footer, ProductCard, AdminSidebar, rotas protegidas
-├── context/         # AuthContext (login), CartContext (carrinho/reserva)
-├── services/        # Camada de dados simulados (mockDb, produtosService, authService)
-├── lib/             # format.ts (preço em R$), cpf.ts (validação de CPF)
-├── pages/           # Páginas do cliente (Home, Catálogo, Produto, Reservas, Login, Cadastro, Perfil)
-├── pages/admin/     # Painel administrativo (Dashboard, Estoque, Novo Produto)
-└── types/           # Tipos compartilhados (Produto, Usuario)
+├── context/         # AuthContext (login/token), CartContext (carrinho antes de confirmar)
+├── services/        # Chamadas à API: authService, produtosService, reservasService
+├── lib/             # api.ts (cliente axios), format.ts (preço, datas, status), cpf.ts
+├── pages/           # Home, Catálogo, Produto, Reservas (carrinho), Minhas Reservas, Login, Cadastro, Perfil
+├── pages/admin/     # Dashboard, Estoque, Novo Produto, Reservas
+└── types/           # Tipos compartilhados (Produto, Usuario, Reserva)
 ```
 
 ### Componentização e reutilização
 
-- `ProductCard` recebe um `produto` via props e é reaproveitado no Catálogo, na página
-  de Produto (seção "relacionados") e poderia ser usado em qualquer outra listagem.
-- `Header`, `Footer` e `AdminSidebar` são usados em todas as páginas, evitando repetir
-  a navegação em cada tela.
-- `ProtectedRoute` e `AdminRoute` encapsulam a lógica de controle de acesso por rota,
-  reutilizada em `/perfil` e em todas as rotas `/admin/*`.
+- `ProductCard` recebe um `produto` via props e é reaproveitado no Catálogo e na página de Produto.
+- `Header`, `Footer` e `AdminSidebar` aparecem em todas as páginas, sem repetir a navegação.
+- `ProtectedRoute` e `AdminRoute` controlam o acesso por rota. É só uma camada de UX — a proteção
+  de verdade está no backend (`verifyToken` + `isAdmin`).
+- `STATUS_RESERVA` (em `lib/format.ts`) é usado pelas telas do cliente e do admin para mostrar
+  o status da reserva sempre com o mesmo rótulo e cor.
 
-### Interações já implementadas
+## Integração com o backend
 
-- Seletor de quantidade, cálculo de total e remoção de itens no carrinho de reserva.
-- Exibição condicional: produto esgotado desabilita o botão de reserva; alerta visual
-  de estoque baixo no painel admin; mensagens de erro de formulário.
-- Mostrar/ocultar senha na tela de login.
+`src/lib/api.ts` cria o cliente axios (`VITE_API_URL`) e anexa o token JWT a toda requisição
+autenticada. Os arquivos de `src/services/` são os únicos que falam HTTP — nenhuma página chama
+o axios diretamente, então trocar a URL da API (local, Render) não exige mexer em telas.
 
-## Sobre os dados simulados (`src/services/`)
+### Fluxo de reservas
 
-Para esta entrega, a atividade não exige integração com API REST — por isso toda a
-"persistência" acontece em `src/services/mockDb.ts`, que guarda os dados no
-`localStorage` do navegador (produtos e usuários de exemplo já vêm pré-cadastrados).
-Os arquivos `produtosService.ts` e `authService.ts` expõem funções assíncronas
-(`listarProdutos`, `login`, `registrarEntradaEstoque`, etc.) com a mesma assinatura
-que as chamadas à API real terão — a ideia é que, na próxima fase, baste trocar o
-conteúdo dessas duas funções para `fetch`/`axios` reais, sem precisar alterar nenhuma
-página ou componente.
+1. O cliente monta o carrinho (salvo no navegador) e, em **Minha Adega**, escolhe opcionalmente
+   quando vai retirar.
+2. Ao confirmar, `POST /api/reservas`: o backend confere maioridade e estoque e já baixa o estoque.
+   Sem login, o cliente é levado ao login e volta para o carrinho.
+3. Em **Minhas Reservas** o cliente acompanha o status e pode cancelar (o estoque volta).
+4. No painel admin, **Pedidos / Reservas** permite marcar como pronta, confirmar a retirada ou cancelar,
+   com filtro por status. O Dashboard mostra o número de reservas pendentes.
+5. Reservas não retiradas em 24h expiram sozinhas no backend.
+
+### O que ainda não está conectado
+
+- **Fotos dos produtos**: hoje é um placeholder com a inicial do nome.
+
+## Publicação (deploy)
+
+O frontend é um site estático: `npm run build` gera a pasta `dist/`. Em qualquer hospedagem:
+
+1. Defina a variável de ambiente **`VITE_API_URL`** com a URL pública da API, terminando em `/api`
+   (ex.: `https://adega-do-rei.onrender.com/api`). Ela é lida **na hora do build**, então depois de
+   mudá-la é preciso fazer um novo deploy.
+2. Comando de build: `npm run build`. Pasta publicada: `dist`. Diretório raiz do projeto: `src/frontend`.
+3. Libere a URL do site no CORS da API: acrescente-a em `CORS_ORIGIN` no Render, separada por vírgula
+   da URL local (`http://localhost:5173,https://seu-site.exemplo`).
+4. **Redirecionamento de rotas (SPA):** sem ele, dar F5 em `/catalogo` dá "página não encontrada".
+   - Netlify / Cloudflare Pages: já resolvido pelo arquivo `public/_redirects`.
+   - Vercel: já resolvido pelo `vercel.json`.
+   - Render Static Site: em *Redirects/Rewrites* crie uma regra do tipo **Rewrite**, origem `/*`, destino `/index.html`.
 
 ## Paleta e tipografia
 
