@@ -10,6 +10,7 @@ import Reservas from './pages/Reservas';
 import Cadastro from './pages/Cadastro';
 import Login from './pages/Login';
 import Perfil from './pages/Perfil';
+import MinhasReservas from './pages/MinhasReservas';
 
 import AdminLayout from './pages/admin/AdminLayout';
 import Dashboard from './pages/admin/Dashboard';
@@ -32,6 +33,7 @@ export default function App() {
 
           <Route element={<ProtectedRoute />}>
             <Route path="/perfil" element={<Perfil />} />
+            <Route path="/minhas-reservas" element={<MinhasReservas />} />
           </Route>
 
           <Route path="/admin" element={<AdminRoute />}>

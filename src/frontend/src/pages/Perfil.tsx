@@ -1,5 +1,5 @@
 import { useAuth } from '../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 export default function Perfil() {
   const { usuario, logout } = useAuth();
@@ -19,7 +19,10 @@ export default function Perfil() {
         <p><span className="text-muted">Perfil:</span> {usuario.role === 'admin' ? 'Administrador' : 'Cliente'}</p>
       </div>
 
-      <button className="btn-outline mt-6" onClick={() => { logout(); navigate('/'); }}>Sair da conta</button>
+      <div className="flex gap-3 mt-6">
+        {usuario.role === 'cliente' && <Link to="/minhas-reservas" className="btn-primary">Minhas reservas</Link>}
+        <button className="btn-outline" onClick={() => { logout(); navigate('/'); }}>Sair da conta</button>
+      </div>
     </div>
   );
 }
