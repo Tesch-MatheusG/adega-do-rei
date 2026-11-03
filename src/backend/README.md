@@ -50,6 +50,13 @@ src/
 | PATCH | `/api/produtos/:id/estoque` | Admin | Entrada de estoque (`{"quantidade": 12, "motivo": "opcional"}`) |
 | GET | `/api/produtos/:id/movimentacoes` | Admin | Histórico de movimentações do estoque do produto |
 | DELETE | `/api/produtos/:id` | Admin | Remove do catálogo (exclusão lógica) |
+| POST | `/api/reservas` | Cliente | Cria reserva (`{"itens":[{"produtoId":1,"quantidade":2}],"retiradaPrevista":"2026-11-10T15:00:00Z"}`); valida maioridade e estoque e já baixa o estoque |
+| GET | `/api/reservas/minhas` | Cliente | Reservas do cliente logado |
+| GET | `/api/reservas` | Admin | Todas as reservas (`?status=pendente`) |
+| GET | `/api/reservas/:id` | Dono ou Admin | Detalhe da reserva |
+| PATCH | `/api/reservas/:id/cancelar` | Dono ou Admin | Cancela e devolve o estoque |
+| PATCH | `/api/reservas/:id/pronta` | Admin | Marca como pronta para retirada |
+| PATCH | `/api/reservas/:id/retirada` | Admin | Confirma a retirada (cliente buscou e pagou no balcão) |
 
 Rotas protegidas exigem o header `Authorization: Bearer <token>`.
 
@@ -143,3 +150,12 @@ rodar localmente e rodar em produção.
   Aiven acima e o `CORS_ORIGIN` apontando para a URL pública do frontend).
 - O Render define sua própria `PORT` automaticamente; o `server.js` já lê
   `process.env.PORT`, então nada precisa ser alterado para isso.
+
+## Reservas — como funciona
+
+- **Status:** `pendente` → `pronta` → `retirada`; ou `cancelada` / `expirada`.
+- **Estoque:** é baixado **no momento da reserva** (movimentação `reserva`), para ninguém reservar o que não existe (RN05). Cancelar ou expirar devolve o estoque (movimentação `ajuste`). Retirar não mexe no saldo, porque ele já foi baixado.
+- **Expiração (RN03):** a reserva vale até 24h depois do horário de retirada combinado. Um agendador no `server.js` confere a cada `EXPIRACAO_INTERVALO_MIN` minutos, e as listagens também conferem na hora (importante no plano gratuito do Render, em que o servidor "dorme").
+- **Atomicidade:** reserva, itens e movimentações são gravados na mesma transação, com `SELECT ... FOR UPDATE` nos produtos.
+- **Privacidade:** o admin vê nome e e-mail do cliente, nunca CPF ou data de nascimento (RN08).
+- **Testes:** `npm test` (inclui `tests/reservas.test.js`).
