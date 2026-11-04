@@ -2,12 +2,14 @@
 // Cria o usuário administrador (dono da adega) a partir das variáveis do .env
 require('dotenv').config({ quiet: true });
 const bcrypt = require('bcrypt');
+const validator = require('validator');
 const { sequelize, User } = require('../models');
 
 async function run() {
   await sequelize.sync();
 
-  const email = process.env.ADMIN_EMAIL;
+  // Mesma normalização do cadastro/login (minúsculas etc.), senão o admin não conseguiria logar
+  const email = validator.normalizeEmail(process.env.ADMIN_EMAIL || '') || process.env.ADMIN_EMAIL;
   const existente = await User.findOne({ where: { email } });
   if (existente) {
     console.log('Admin já existe:', email);

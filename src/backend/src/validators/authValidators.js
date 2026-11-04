@@ -1,12 +1,13 @@
 const { body } = require('express-validator');
 const { isValidCPF, isAdult } = require('../utils/cpf');
+const { cleanText } = require('../utils/normalize');
 
 const registerRules = [
+  // cleanText: remove tags/espaços repetidos sem escapar apóstrofos (ex: D'Ávila)
   body('nome')
-    .trim()
+    .customSanitizer(cleanText)
     .notEmpty().withMessage('Nome é obrigatório.')
-    .isLength({ min: 3, max: 100 }).withMessage('Nome deve ter de 3 a 100 caracteres.')
-    .escape(),
+    .isLength({ min: 3, max: 100 }).withMessage('Nome deve ter de 3 a 100 caracteres.'),
 
   body('email')
     .trim()

@@ -10,15 +10,15 @@ const sslEnabled = String(process.env.DB_SSL).toLowerCase() === 'true';
 const dialectOptions = {};
 if (sslEnabled) {
   // A Aiven disponibiliza um certificado CA (ca.pem) no painel do serviço.
-  // Baixe esse arquivo, salve-o no projeto (fora do Git) e aponte
-  // DB_SSL_CA_PATH para ele — assim a conexão valida o certificado de verdade.
-  // Sem esse arquivo, a conexão ainda é criptografada, só sem validar a
-  // cadeia do certificado (aceitável para desenvolvimento/entrega da disciplina).
-  const caPath = process.env.DB_SSL_CA_PATH;
-  dialectOptions.ssl = {
-    rejectUnauthorized: Boolean(caPath),
-    ca: caPath ? fs.readFileSync(caPath) : undefined,
-  };
+  // O certificado pode vir de duas formas (a que for mais fácil na hospedagem):
+  //  - DB_SSL_CA      : o TEXTO do ca.pem colado direto na variável (ideal no Render,
+  //                     que não tem como "subir" arquivos fora do Git);
+  //  - DB_SSL_CA_PATH : caminho de um arquivo ca.pem (ideal na sua máquina).
+  // Sem nenhum dos dois, a conexão ainda é criptografada, só não valida a cadeia.
+  const caTexto = process.env.DB_SSL_CA && process.env.DB_SSL_CA.replace(/\\n/g, '\n');
+  const caArquivo = process.env.DB_SSL_CA_PATH && fs.readFileSync(process.env.DB_SSL_CA_PATH);
+  const ca = caTexto || caArquivo || undefined;
+  dialectOptions.ssl = { rejectUnauthorized: Boolean(ca), ca };
 }
 
 const sequelize = new Sequelize(

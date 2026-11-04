@@ -1,0 +1,73 @@
+PASS tests/api.test.js
+  Cadastro de cliente — validação e tratamento (RF02, RN01, RN08)
+    ✓ aceita cadastro válido, grava CPF só com dígitos e e-mail em minúsculas (92 ms)
+    ✓ senha é gravada como hash bcrypt e nunca devolvida (95 ms)
+    ✓ rejeita CPF inválido (400 com detalhe do campo) (14 ms)
+    ✓ rejeita menor de 18 anos (RN01) (11 ms)
+    ✓ rejeita data inexistente no calendário (30/02) (6 ms)
+    ✓ rejeita senha fraca (sem número / curta) (27 ms)
+    ✓ rejeita e-mail duplicado ou CPF duplicado (409) (16 ms)
+    ✓ ignora tentativa de se cadastrar como admin (escalada de privilégio) (87 ms)
+    ✓ preserva apóstrofo no nome, remove tags HTML e espaços repetidos (90 ms)
+  Login — tratamento de inconsistências (RNF02)
+    ✓ mensagem idêntica para e-mail inexistente e senha errada (não revela qual falhou) (88 ms)
+    ✓ rejeita corpo sem e-mail/senha (400) (5 ms)
+    ✓ token inválido é recusado (401) (3 ms)
+  Produtos — controle de acesso (RN07, RNF03)
+    ✓ sem token: 401 (8 ms)
+    ✓ cliente autenticado: 403 (6 ms)
+    ✓ catálogo é público (6 ms)
+  Produtos — validação e transformação
+    ✓ aceita o payload exato do frontend (volumeMl e descricao = null) (16 ms)
+    ✓ arredonda preço para 2 casas e devolve preço como número (não texto) (23 ms)
+    ✓ padroniza categoria e preserva apóstrofo no nome (7 ms)
+    ✓ filtro por categoria é tolerante a maiúsculas/minúsculas (4 ms)
+    ✓ rejeita preço zero (400) (6 ms)
+    ✓ rejeita preço negativo (400) (6 ms)
+    ✓ rejeita preço não numérico (400) (3 ms)
+    ✓ rejeita nome vazio (400) (3 ms)
+    ✓ rejeita categoria vazia (400) (2 ms)
+    ✓ rejeita estoque negativo (400) (2 ms)
+    ✓ rejeita volume zero (400) (3 ms)
+    ✓ rejeita nome acima de 120 caracteres (400) (3 ms)
+    ✓ rejeita produto duplicado (mesmo nome e volume) — 409 (10 ms)
+    ✓ atualização parcial mantém os demais campos (13 ms)
+    ✓ id inválido (400), produto inexistente (404), JSON malformado (400), rota inexistente (404) (9 ms)
+  Estoque — integridade e histórico (RN06, RF13, RNF10)
+    ✓ estoque inicial gera movimentação de entrada (2 ms)
+    ✓ entrada de estoque soma ao saldo e registra saldo antes/depois (15 ms)
+    ✓ rejeita quantidade inválida (0) (8 ms)
+    ✓ rejeita quantidade inválida (-3) (5 ms)
+    ✓ rejeita quantidade inválida ("abc") (3 ms)
+    ✓ rejeita quantidade inválida (1.5) (12 ms)
+    ✓ transação: se o histórico falhar, o saldo NÃO é alterado (rollback) (13 ms)
+    ✓ saldo atual = soma das movimentações (consistência saldo x histórico) (3 ms)
+    ✓ histórico é restrito ao admin (4 ms)
+    ✓ exclusão lógica: some do catálogo, mas o registro e o histórico permanecem (15 ms)
+
+PASS tests/unit.test.js
+  Validação de CPF (utils/cpf)
+    ✓ aceita CPF válido 52998224725 (1 ms)
+    ✓ aceita CPF válido 11144477735 (1 ms)
+    ✓ aceita CPF válido 12345678909
+    ✓ rejeita CPF inválido: dígito verificador errado
+    ✓ rejeita CPF inválido: sequência repetida (1 ms)
+    ✓ rejeita CPF inválido: menos de 11 dígitos
+    ✓ rejeita CPF inválido: com letras
+    ✓ rejeita CPF inválido: com máscara (a máscara é removida antes, no validator)
+  Maioridade (RN01)
+    ✓ aceita quem completa 18 anos hoje (1 ms)
+    ✓ rejeita quem faz 18 anos amanhã
+    ✓ rejeita menor de idade (1 ms)
+  Transformações (utils/normalize)
+    ✓ cleanText remove tags, espaços repetidos e preserva apóstrofo (2 ms)
+    ✓ cleanText trata null/undefined como texto vazio (1 ms)
+    ✓ normalizeCategoria padroniza capitalização e mantém siglas
+    ✓ emptyToNull converte vazio em null
+    ✓ roundMoney arredonda para 2 casas (1 ms)
+
+Test Suites: 2 passed, 2 total
+Tests:       56 passed, 56 total
+Snapshots:   0 total
+Time:        1.965 s, estimated 3 s
+Ran all test suites.

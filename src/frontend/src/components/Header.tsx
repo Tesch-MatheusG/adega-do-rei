@@ -25,7 +25,7 @@ export default function Header() {
         <nav className="hidden md:flex items-center gap-6">
           <NavLink to="/" end className={linkClass}>Início</NavLink>
           <NavLink to="/catalogo" className={linkClass}>Catálogo</NavLink>
-          <NavLink to="/reservas" className={linkClass}>Reservas</NavLink>
+          <NavLink to="/minhas-reservas" className={linkClass}>Reservas</NavLink>
           {usuario?.role === 'admin' && (
             <NavLink to="/admin" className={linkClass}>Painel Gestão</NavLink>
           )}

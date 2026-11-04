@@ -13,6 +13,7 @@ router.get('/:id', idOnlyRules, validate, ctrl.buscar);
 router.post('/', verifyToken, isAdmin, createRules, validate, ctrl.criar);
 router.put('/:id', verifyToken, isAdmin, updateRules, validate, ctrl.atualizar);
 router.patch('/:id/estoque', verifyToken, isAdmin, stockEntryRules, validate, ctrl.entradaEstoque);
+router.get('/:id/movimentacoes', verifyToken, isAdmin, idOnlyRules, validate, ctrl.movimentacoes);
 router.delete('/:id', verifyToken, isAdmin, idOnlyRules, validate, ctrl.remover);
 
 module.exports = router;
