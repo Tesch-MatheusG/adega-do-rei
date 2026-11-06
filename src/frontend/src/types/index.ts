@@ -46,3 +46,8 @@ export interface Reserva {
   itens: ItemReserva[];
   usuario?: { id: number; nome: string; email: string }; // só vem na listagem do admin
 }
+
+export interface Categoria {
+  id: number;
+  nome: string;
+}
