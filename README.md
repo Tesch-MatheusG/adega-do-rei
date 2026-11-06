@@ -1,68 +1,158 @@
 # Adega do Rei — Sistema de Reservas e Controle de Estoque
 
-Projeto integrado desenvolvido para o módulo **Desenvolvimento de Aplicação Web**, em parceria com a **Adega do Rei**, comércio local de bebidas alcoólicas.
+Projeto integrado desenvolvido para o módulo **Desenvolvimento de Aplicação Web** (UNIFEOB), em parceria com a **Adega do Rei**, comércio local de bebidas alcoólicas.
+
+| | Endereço |
+|---|---|
+| Site | https://adega-do-rei-web.onrender.com |
+| API | https://adega-do-rei.onrender.com |
+| Protótipo (Figma) | [design/figma.md](./design/figma.md) |
+
+> A API roda no plano gratuito do Render: depois de alguns minutos sem uso ela "dorme", e o primeiro acesso pode levar cerca de 30 segundos.
 
 ## Sobre o projeto
 
-Atualmente a Adega do Rei controla seu estoque manualmente (papel e caneta) e atende pedidos pelo WhatsApp pessoal do proprietário. Este projeto tem como objetivo substituir esse processo por uma solução digital de baixo custo, composta por:
+A Adega do Rei controlava o estoque manualmente (papel e caneta) e atendia pedidos pelo WhatsApp pessoal do proprietário. Este projeto substitui esse processo por uma solução digital de baixo custo, composta por:
 
-- **Site de reservas**: os clientes consultam o catálogo de produtos e reservam itens para retirada e pagamento no próprio estabelecimento.
-- **Painel administrativo**: de uso exclusivo do proprietário, para cadastro de produtos, controle de entrada/saída de estoque e gerenciamento das reservas recebidas.
+- **Site de reservas:** o cliente consulta o catálogo, reserva produtos e acompanha suas reservas. A retirada e o pagamento acontecem presencialmente, no próprio estabelecimento.
+- **Painel administrativo:** de uso exclusivo do proprietário, para cadastrar produtos, controlar o estoque e gerenciar as reservas recebidas.
 
-A solução é hospedada em serviços de nuvem com custo compatível com o porte da empresa, evitando investimento em infraestrutura própria.
+## Funcionalidades
+
+| Área | Situação |
+|---|---|
+| Cadastro de cliente com CPF válido e verificação de maioridade (18+) | Pronto |
+| Login com JWT e perfis (cliente e administrador) | Pronto |
+| Catálogo de produtos e página de detalhe | Pronto |
+| Cadastro de produtos e entrada de estoque (admin) | Pronto |
+| Histórico de movimentações de estoque (entrada, reserva, ajuste), com saldo antes e depois | Pronto (API) |
+| Alerta de estoque baixo no painel | Pronto |
+| Reserva de produtos, com conferência de estoque e baixa automática | Pronto |
+| Minhas Reservas e cancelamento pelo cliente (o estoque volta) | Pronto |
+| Gestão de reservas pelo admin: marcar como pronta, confirmar retirada, cancelar | Pronto |
+| Expiração automática de reservas não retiradas em 24h | Pronto |
+| Publicação na nuvem (site, API e banco) | Pronto |
+| Edição de produto e consulta do histórico pelo painel (a API já existe) | Em andamento |
+| Fotos dos produtos | Pendente |
+| Saída manual de estoque (perda ou quebra) | Pendente |
+| Relatório de produtos mais reservados | Pendente |
+| Backup automático do banco e análise de custo | Pendente |
+
+O detalhamento por requisito está em [`docs/`](./docs).
 
 ## Tecnologias
 
-- **Front-end:** React + TypeScript + Tailwind CSS + Vite
-- **Back-end:** *Node.js + Express (arquitetura MVC — Routes, Controllers, Models)
-- **ORM / Banco de dados:** Sequelize + MySQL
-- **Infraestrutura:** AWS (RDS, S3, Elastic Beanstalk/EC2, EventBridge + Lambda), priorizando camada gratuita
-- **Autenticação e Segurança:** JWT (JSON Web Token) + bcrypt (hash de senhas)
-- **Validação:** express-validator
-- **Ferramentas de Banco:** DBeaver (Cliente MySQL)
+- **Front-end:** React 19 + TypeScript + Tailwind CSS + Vite, com React Router e Axios
+- **Back-end:** Node.js + Express, em camadas (rotas, middlewares, validators, controllers, models e services)
+- **ORM e banco:** Sequelize + MySQL
+- **Autenticação e segurança:** JWT, bcrypt (hash de senhas), controle de acesso por papel no servidor, sanitização e validação com express-validator
+- **Testes:** Jest + Supertest (90 testes automatizados)
+- **Infraestrutura:** Render (API e site estático) e Aiven (MySQL gerenciado, com conexão SSL), ambos em plano gratuito
+- **Ferramentas:** DBeaver (cliente MySQL), Figma (protótipo)
 
 ## Estrutura do repositório
 
 ```
 adega-do-rei/
-├── .github/              # Templates de PR e Issues
-├── design/               # Protótipos e diagramas
-├── docs/                 # Documentação (requisitos, casos de uso, backlog)
-├── src/                  # Código-fonte (front-end e back-end)
-├── tests/                # Testes automatizados
+├── .github/              # Template de Pull Request
+├── design/               # Protótipo (Figma)
+├── docs/                 # Requisitos, regras de negócio, casos de uso, backlog e evidências de testes
+├── src/
+│   ├── backend/          # API REST (Node.js + Express + Sequelize)
+│   └── frontend/         # Aplicação web (React + TypeScript)
+├── tests/                # Guia de testes (os testes automatizados ficam em src/backend/tests)
 └── README.md
 ```
 
-Documentação detalhada disponível em [`docs/`](./docs):
-- [`rf.md`](./docs/rf.md) — Requisitos Funcionais
-- [`rn.md`](./docs/rn.md) — Regras de Negócio
-- [`rnf.md`](./docs/rnf.md) — Requisitos Não Funcionais
-- [`casosDeUso.md`](./docs/casosDeUso.md) — Casos de Uso
-- [`backlog.md`](./docs/backlog.md) — Backlog do produto
+Documentação do projeto, em [`docs/`](./docs):
+
+- [`rf.md`](./docs/rf.md): requisitos funcionais
+- [`rn.md`](./docs/rn.md): regras de negócio, com o status de implementação de cada uma
+- [`rnf.md`](./docs/rnf.md): requisitos não funcionais
+- [`casosDeUso.md`](./docs/casosDeUso.md): casos de uso
+- [`backlog.md`](./docs/backlog.md): backlog do produto
+- [`evidencias/resultado-testes.txt`](./docs/evidencias/resultado-testes.txt): resultado da última execução dos testes
+
+Cada parte tem o seu próprio README, com mais detalhes: [backend](./src/backend/README.md) e [frontend](./src/frontend/README.md).
+
+## Como rodar localmente
+
+Pré-requisitos: **Node.js 20 ou superior** e **MySQL** instalado.
+
+```bash
+git clone https://github.com/Tesch-MatheusG/adega-do-rei
+cd adega-do-rei
+```
+
+### Back-end
+
+Crie o banco no MySQL (pelo DBeaver ou pelo terminal):
+
+```sql
+CREATE DATABASE adega_do_rei;
+```
+
+Depois, em `src/backend`:
+
+```bash
+cd src/backend
+npm install
+cp .env.example .env     # no Windows (cmd): copy .env.example .env
+```
+
+Edite o `.env` com os dados do seu MySQL. **Para MySQL local, use `DB_SSL=false`** (o valor `true` é só para a Aiven). Depois:
+
+```bash
+npm run seed:admin       # cria o administrador (ADMIN_EMAIL e ADMIN_SENHA do .env)
+npm run dev              # API em http://localhost:3000
+```
+
+As tabelas são criadas automaticamente na primeira execução (`sequelize.sync()`).
+
+### Front-end (em outro terminal)
+
+```bash
+cd src/frontend
+npm install
+cp .env.example .env     # VITE_API_URL=http://localhost:3000/api
+npm run dev              # site em http://localhost:5173
+```
+
+Para usar a API publicada em vez da local, aponte `VITE_API_URL` para `https://adega-do-rei.onrender.com/api`.
+
+### Testes
+
+```bash
+cd src/backend
+npm test
+```
+
+Os testes usam um banco SQLite em memória, então não alteram nenhum dado real.
+
+## Arquitetura e publicação
+
+```
+Navegador ──► Site (Render, estático) ──► API (Render, Node/Express) ──► MySQL (Aiven, SSL)
+```
+
+- Toda configuração de ambiente (banco, JWT, CORS, URL da API) vem de **variáveis de ambiente**. O mesmo código roda localmente e em produção.
+- Os arquivos `.env` nunca vão para o Git. Cada parte traz um `.env.example` como modelo.
+- As instruções de publicação estão nos READMEs do [backend](./src/backend/README.md) e do [frontend](./src/frontend/README.md).
+
+## Segurança, em resumo
+
+- Senhas guardadas só como hash bcrypt, que nunca sai nas consultas.
+- Papel do usuário nunca vem do corpo da requisição; o acesso ao painel é conferido no servidor (401 sem login, 403 sem permissão).
+- Um cliente só enxerga as próprias reservas.
+- Entradas limpas e validadas no servidor (CPF com dígitos verificadores, data real, maioridade, limites de quantidade).
+- Operações de estoque transacionais, com histórico completo e rastreável.
+- Dados pessoais tratados com coleta mínima: o administrador nunca vê o CPF dos clientes.
 
 ## Fluxo de branches
 
-- `main` — versões estáveis, prontas para entrega
-- `develop` — integração contínua do time
-- `feature/*` — uma branch por funcionalidade, com Pull Request para `develop`
-
-## Como rodar o projeto
-
-### Clonar o repositório
-git clone https://github.com/Tesch-MatheusG/adega-do-rei
-cd adega-do-rei
-
-### Front-end
-cd src/frontend/adega-do-rei     
-npm install     
-npm run dev 
-
-### Back-end (em outro terminal)
-cd src/backend  
-npm install
-### Configurar o .env com as credenciais do MySQL (ver .env.example)
-npx sequelize db:migrate    
-npm run dev
+- `main`: versões estáveis, prontas para entrega
+- `develop`: integração do time
+- `feature/*`: uma branch por funcionalidade, com Pull Request para `develop` e revisão do outro integrante
 
 ## Equipe
 
