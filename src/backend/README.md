@@ -45,7 +45,9 @@ src/
 | GET | `/api/auth/me` | Token | Dados do usuário logado |
 | GET | `/api/produtos` | Público | Lista o catálogo (`?categoria=`) |
 | GET | `/api/produtos/:id` | Público | Detalhe do produto |
-| POST | `/api/produtos` | Admin | Cadastra produto |
+| GET | `/api/categorias` | Público | Lista oficial de categorias |
+| POST | `/api/categorias` | Admin | Cadastra categoria nova (`{"nome":"Licor"}`); duplicada responde 409 |
+| POST | `/api/produtos` | Admin | Cadastra produto (a categoria precisa estar na lista oficial) |
 | PUT | `/api/produtos/:id` | Admin | Atualiza produto |
 | PATCH | `/api/produtos/:id/estoque` | Admin | Entrada de estoque (`{"quantidade": 12, "motivo": "opcional"}`) |
 | GET | `/api/produtos/:id/movimentacoes` | Admin | Histórico de movimentações do estoque do produto |
@@ -150,6 +152,12 @@ rodar localmente e rodar em produção.
   Aiven acima e o `CORS_ORIGIN` apontando para a URL pública do frontend).
 - O Render define sua própria `PORT` automaticamente; o `server.js` já lê
   `process.env.PORT`, então nada precisa ser alterado para isso.
+
+## Categorias — como funciona
+
+- A categoria de um produto **precisa estar na tabela `categorias`**. O admin escolhe numa lista e, se faltar uma, cadastra na própria tela de novo produto.
+- O nome é padronizado ("vinho tinto" → "Vinho Tinto") e a duplicidade é conferida sem diferenciar maiúsculas. O produto é sempre gravado com o nome oficial da categoria.
+- Na inicialização, `sincronizarCategorias()` cadastra as categorias dos produtos que já existiam (e as categorias padrão se o banco estiver vazio). **Não é preciso `ALTER TABLE`**: a tabela `categorias` é criada pelo `sync()` e a coluna `produtos.categoria` continua um texto.
 
 ## Reservas — como funciona
 
