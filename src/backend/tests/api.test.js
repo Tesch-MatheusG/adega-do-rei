@@ -11,7 +11,7 @@ process.env.JWT_SECRET = 'segredo-de-teste';
 const request = require('supertest');
 const bcrypt = require('bcrypt');
 const app = require('../src/app');
-const { sequelize, User, Product, StockMovement } = require('../src/models');
+const { sequelize, User, Product, StockMovement, Categoria } = require('../src/models');
 
 const CPF_OK = '111.444.777-35';
 let adminToken;
@@ -31,6 +31,8 @@ beforeAll(async () => {
     nome: 'Administrador', email: 'admin@exemplo.com', cpf: '52998224725',
     dataNascimento: '1990-01-01', senha: await bcrypt.hash('admin1234', 10), role: 'admin',
   });
+  // Produto só aceita categoria da lista oficial (tabela "categorias")
+  await Categoria.bulkCreate(['Whisky', 'Cerveja', 'Vodka', 'Vinho Tinto', 'Rum', 'Espumante'].map((nome) => ({ nome })));
   adminToken = (await request(app).post('/api/auth/login').send({ email: 'admin@exemplo.com', senha: 'admin1234' })).body.token;
 });
 afterAll(() => sequelize.close());
