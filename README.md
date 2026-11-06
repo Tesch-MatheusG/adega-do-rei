@@ -75,6 +75,27 @@ Documentação do projeto, em [`docs/`](./docs):
 
 Cada parte tem o seu próprio README, com mais detalhes: [backend](./src/backend/README.md) e [frontend](./src/frontend/README.md).
 
+## Nuvem (Render + Aiven)
+
+```
+Navegador ──► Site (Render, estático) ──► API (Render, Node/Express) ──► MySQL (Aiven, SSL)
+```
+
+| Serviço | Função | Plano |
+|---|---|---|
+| Render — Static Site | Site (`src/frontend`, build `npm run build`, publica `dist`) | Gratuito |
+| Render — Web Service | API (`src/backend`, build `npm install`, start `npm start`) | Gratuito |
+| Aiven — MySQL | Banco de dados gerenciado, com conexão SSL | Gratuito |
+
+- **Configuração:** toda configuração (banco, JWT, CORS e URL da API) vem de **variáveis de ambiente**, então o mesmo código roda localmente e em produção. Os arquivos `.env` nunca vão para o Git, e cada parte traz um `.env.example` como modelo.
+- **Banco:** os dados de conexão (`DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`) vêm do painel da Aiven, com `DB_SSL=true`. As tabelas (`usuarios`, `produtos`, `movimentacoes_estoque`, `reservas` e `reserva_itens`) são criadas sozinhas quando a API sobe.
+- **API:** além das variáveis do banco, usa `JWT_SECRET`, `CORS_ORIGIN` (URLs do site, separadas por vírgula) e `EXPIRACAO_INTERVALO_MIN`. O Render define a `PORT`.
+- **Site:** usa `VITE_API_URL` (termina em `/api`), lida na hora do build, e uma regra *Rewrite* `/*` → `/index.html` para o F5 funcionar nas rotas.
+- **Atualização:** o repositório é público e não dispara deploy sozinho. Depois de cada merge na `develop`, use **Manual Deploy** na API e, se o frontend mudou, no site. Mudanças em Models com colunas novas exigem `ALTER TABLE`, porque o `sync()` não altera tabelas existentes.
+- **Limitações:** no plano gratuito a API "dorme" após alguns minutos sem uso, e o primeiro acesso leva cerca de 30 segundos. Backup automático do banco e monitoramento ainda não estão configurados.
+
+Mais detalhes de publicação estão nos READMEs do [backend](./src/backend/README.md) e do [frontend](./src/frontend/README.md).
+
 ## Como rodar localmente
 
 Pré-requisitos: **Node.js 20 ou superior** e **MySQL** instalado.
