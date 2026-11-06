@@ -32,7 +32,8 @@ async function buscar(req, res) {
 // Produto + movimentação do estoque inicial gravados na MESMA transação (RN06, RNF10)
 async function criar(req, res) {
   try {
-    const { nome, categoria, preco, volumeMl, descricao, estoque } = req.body;
+    const { nome, preco, volumeMl, descricao, estoque } = req.body;
+    const categoria = req.categoriaOficial; // nome oficial, já conferido no validator
 
     // Duplicidade ignorando maiúsculas/minúsculas (não depende da collation do banco)
     const duplicado = await Product.findOne({
@@ -82,7 +83,12 @@ async function atualizar(req, res) {
     // Campo ausente = mantém o valor atual; evita gravar undefined/NULL por engano.
     const campos = {};
     for (const campo of ['nome', 'categoria', 'preco', 'volumeMl', 'descricao']) {
-      if (req.body[campo] !== undefined) campos[campo] = req.body[campo];
+      if (req.body[campo] === undefined) continue;
+      if (campo === 'categoria') {
+        if (req.categoriaOficial) campos.categoria = req.categoriaOficial; // null/ausente = mantém
+        continue;
+      }
+      campos[campo] = req.body[campo];
     }
     await produto.update(campos);
     return res.json(produto);
