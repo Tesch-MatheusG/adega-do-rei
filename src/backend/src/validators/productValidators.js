@@ -1,5 +1,7 @@
 const { body, param } = require('express-validator');
+const { fn, col, where: sqlWhere } = require('sequelize');
 const { cleanText, normalizeCategoria, emptyToNull, roundMoney } = require('../utils/normalize');
+const Categoria = require('../models/Categoria');
 
 const idRule = param('id').isInt({ min: 1 }).withMessage('ID inválido.').toInt();
 
@@ -19,7 +21,16 @@ const categoria = (obrigatorio) => {
   return chain
     .customSanitizer(normalizeCategoria)
     .notEmpty().withMessage(obrigatorio ? 'Categoria é obrigatória.' : 'Categoria não pode ficar vazia.')
-    .isLength({ max: 60 }).withMessage('Categoria deve ter no máximo 60 caracteres.');
+    .isLength({ max: 60 }).withMessage('Categoria deve ter no máximo 60 caracteres.')
+    .bail()
+    // A categoria precisa estar na lista oficial (tabela "categorias"). Guardamos o nome
+    // oficial em req.categoriaOficial para o controller gravar sempre com a mesma grafia.
+    .custom(async (valor, { req }) => {
+      const oficial = await Categoria.findOne({ where: sqlWhere(fn('LOWER', col('nome')), valor.toLowerCase()) });
+      if (!oficial) throw new Error('Categoria inexistente. Escolha uma da lista ou cadastre uma nova.');
+      req.categoriaOficial = oficial.nome;
+      return true;
+    });
 };
 
 const preco = (obrigatorio) => {

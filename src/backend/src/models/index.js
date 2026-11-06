@@ -4,6 +4,7 @@ const Product = require('./Product');
 const StockMovement = require('./StockMovement');
 const Reserva = require('./Reserva');
 const ReservaItem = require('./ReservaItem');
+const Categoria = require('./Categoria');
 
 Product.hasMany(StockMovement, { foreignKey: 'produtoId', as: 'movimentacoes' });
 StockMovement.belongsTo(Product, { foreignKey: 'produtoId' });
@@ -17,4 +18,4 @@ ReservaItem.belongsTo(Reserva, { foreignKey: 'reservaId' });
 Product.hasMany(ReservaItem, { foreignKey: 'produtoId' });
 ReservaItem.belongsTo(Product, { foreignKey: 'produtoId', as: 'produto' });
 
-module.exports = { sequelize, User, Product, StockMovement, Reserva, ReservaItem };
+module.exports = { sequelize, User, Product, StockMovement, Reserva, ReservaItem, Categoria };
