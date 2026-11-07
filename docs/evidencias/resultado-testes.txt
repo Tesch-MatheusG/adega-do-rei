@@ -1,73 +1,139 @@
+PASS tests/reservas.test.js
+  Criar reserva
+    ✓ exige login (401)
+    ✓ cria reserva, baixa o estoque, calcula total e registra movimentação "reserva"
+    ✓ expiraEm = retirada prevista + 24h (RN03)
+    ✓ mesmo produto em duas linhas soma as quantidades
+    ✓ estoque insuficiente: 409 e NADA é gravado, nem do item que tinha estoque (RN05, RF15)
+    ✓ produto com estoque zerado fica indisponível (RN09)
+    ✓ produto inexistente ou removido: 404
+    ✓ menor de 18 anos não reserva (RN01)
+    ✓ validação rejeita sem itens (400)
+    ✓ validação rejeita itens ausente (400)
+    ✓ validação rejeita quantidade zero (400)
+    ✓ validação rejeita quantidade negativa (400)
+    ✓ validação rejeita quantidade decimal (400)
+    ✓ validação rejeita quantidade absurda (400)
+    ✓ validação rejeita produtoId inválido (400)
+    ✓ validação rejeita data no passado (400)
+    ✓ validação rejeita data > 7 dias (400)
+    ✓ validação rejeita data malformada (400)
+    ✓ quem reserva o último item leva; o seguinte recebe 409 e o saldo nunca fica negativo
+  Consultar reservas
+    ✓ /minhas devolve só as reservas do próprio cliente (RF05)
+    ✓ cliente NÃO vê reserva de outro cliente: 404 (sem revelar que existe)
+    ✓ dono vê a própria reserva; admin vê qualquer uma
+    ✓ lista geral é só do admin (403 para cliente) e NÃO expõe CPF/nascimento (RN08)
+    ✓ filtro por status e status inválido
+    ✓ id inválido: 400; id inexistente: 404
+  Cancelar, preparar e retirar
+    ✓ cliente cancela a própria reserva e o estoque volta com histórico (RF06, RN06)
+    ✓ cancelar duas vezes: 2ª retorna 409 e o estoque NÃO é devolvido em dobro
+    ✓ cliente não cancela reserva alheia (404); admin cancela qualquer uma
+    ✓ fluxo do admin: pendente -> pronta -> retirada; estoque não muda na retirada
+    ✓ reserva retirada não pode mais ser cancelada nem retirada de novo
+  Expiração automática (RN03)
+    ✓ reserva vencida vira "expirada" e o estoque retorna; não vencida e retirada ficam intactas
+    ✓ ao listar, a expiração é aplicada na hora (servidor "dormindo" no Render)
+    ✓ não dá para marcar como retirada uma reserva já vencida
+  Integridade do estoque (RN06)
+    ✓ saldo atual de cada produto = soma das movimentações (reservas, cancelamentos e expirações incluídos)
+
+PASS tests/categorias.test.js
+  Categorias — listar e cadastrar
+    ✓ lista é pública e começa vazia
+    ✓ cadastrar exige login (401) e papel de admin (403)
+    ✓ admin cadastra; o nome é padronizado (maiúsculas e espaços)
+    ✓ mantém siglas e acentos
+    ✓ duplicada (sem diferenciar maiúsculas) responde 409
+    ✓ rejeita nome vazio (400)
+    ✓ rejeita nome só espaços (400)
+    ✓ rejeita nome ausente (400)
+    ✓ rejeita nome só números (400)
+    ✓ rejeita nome tag HTML sem texto (400)
+    ✓ rejeita nome longo demais (400)
+    ✓ tags HTML são removidas do nome
+    ✓ a lista volta em ordem alfabética
+  Produto só aceita categoria da lista oficial
+    ✓ categoria inexistente: 400 com detalhe no campo, e nada é gravado
+    ✓ categoria da lista: grava com o nome oficial, mesmo se digitado diferente
+    ✓ atualizar para categoria inexistente: 400; para existente: ok; sem enviar categoria: mantém
+    ✓ cliente continua sem poder cadastrar produto (403)
+  sincronizarCategorias (roda ao iniciar o servidor)
+    ✓ traz para a lista as categorias dos produtos que já existiam, sem duplicar
+    ✓ é idempotente: rodar de novo não cria nada
+    ✓ banco sem categorias e sem produtos recebe as categorias padrão
+
 PASS tests/api.test.js
   Cadastro de cliente — validação e tratamento (RF02, RN01, RN08)
-    ✓ aceita cadastro válido, grava CPF só com dígitos e e-mail em minúsculas (92 ms)
-    ✓ senha é gravada como hash bcrypt e nunca devolvida (95 ms)
-    ✓ rejeita CPF inválido (400 com detalhe do campo) (14 ms)
-    ✓ rejeita menor de 18 anos (RN01) (11 ms)
-    ✓ rejeita data inexistente no calendário (30/02) (6 ms)
-    ✓ rejeita senha fraca (sem número / curta) (27 ms)
-    ✓ rejeita e-mail duplicado ou CPF duplicado (409) (16 ms)
-    ✓ ignora tentativa de se cadastrar como admin (escalada de privilégio) (87 ms)
-    ✓ preserva apóstrofo no nome, remove tags HTML e espaços repetidos (90 ms)
+    ✓ aceita cadastro válido, grava CPF só com dígitos e e-mail em minúsculas
+    ✓ senha é gravada como hash bcrypt e nunca devolvida
+    ✓ rejeita CPF inválido (400 com detalhe do campo)
+    ✓ rejeita menor de 18 anos (RN01)
+    ✓ rejeita data inexistente no calendário (30/02)
+    ✓ rejeita senha fraca (sem número / curta)
+    ✓ rejeita e-mail duplicado ou CPF duplicado (409)
+    ✓ ignora tentativa de se cadastrar como admin (escalada de privilégio)
+    ✓ preserva apóstrofo no nome, remove tags HTML e espaços repetidos
   Login — tratamento de inconsistências (RNF02)
-    ✓ mensagem idêntica para e-mail inexistente e senha errada (não revela qual falhou) (88 ms)
-    ✓ rejeita corpo sem e-mail/senha (400) (5 ms)
-    ✓ token inválido é recusado (401) (3 ms)
+    ✓ mensagem idêntica para e-mail inexistente e senha errada (não revela qual falhou)
+    ✓ rejeita corpo sem e-mail/senha (400)
+    ✓ token inválido é recusado (401)
   Produtos — controle de acesso (RN07, RNF03)
-    ✓ sem token: 401 (8 ms)
-    ✓ cliente autenticado: 403 (6 ms)
-    ✓ catálogo é público (6 ms)
+    ✓ sem token: 401
+    ✓ cliente autenticado: 403
+    ✓ catálogo é público
   Produtos — validação e transformação
-    ✓ aceita o payload exato do frontend (volumeMl e descricao = null) (16 ms)
-    ✓ arredonda preço para 2 casas e devolve preço como número (não texto) (23 ms)
-    ✓ padroniza categoria e preserva apóstrofo no nome (7 ms)
-    ✓ filtro por categoria é tolerante a maiúsculas/minúsculas (4 ms)
-    ✓ rejeita preço zero (400) (6 ms)
-    ✓ rejeita preço negativo (400) (6 ms)
-    ✓ rejeita preço não numérico (400) (3 ms)
-    ✓ rejeita nome vazio (400) (3 ms)
-    ✓ rejeita categoria vazia (400) (2 ms)
-    ✓ rejeita estoque negativo (400) (2 ms)
-    ✓ rejeita volume zero (400) (3 ms)
-    ✓ rejeita nome acima de 120 caracteres (400) (3 ms)
-    ✓ rejeita produto duplicado (mesmo nome e volume) — 409 (10 ms)
-    ✓ atualização parcial mantém os demais campos (13 ms)
-    ✓ id inválido (400), produto inexistente (404), JSON malformado (400), rota inexistente (404) (9 ms)
+    ✓ aceita o payload exato do frontend (volumeMl e descricao = null)
+    ✓ arredonda preço para 2 casas e devolve preço como número (não texto)
+    ✓ padroniza categoria e preserva apóstrofo no nome
+    ✓ filtro por categoria é tolerante a maiúsculas/minúsculas
+    ✓ rejeita preço zero (400)
+    ✓ rejeita preço negativo (400)
+    ✓ rejeita preço não numérico (400)
+    ✓ rejeita nome vazio (400)
+    ✓ rejeita categoria vazia (400)
+    ✓ rejeita estoque negativo (400)
+    ✓ rejeita volume zero (400)
+    ✓ rejeita nome acima de 120 caracteres (400)
+    ✓ rejeita produto duplicado (mesmo nome e volume) — 409
+    ✓ atualização parcial mantém os demais campos
+    ✓ id inválido (400), produto inexistente (404), JSON malformado (400), rota inexistente (404)
   Estoque — integridade e histórico (RN06, RF13, RNF10)
-    ✓ estoque inicial gera movimentação de entrada (2 ms)
-    ✓ entrada de estoque soma ao saldo e registra saldo antes/depois (15 ms)
-    ✓ rejeita quantidade inválida (0) (8 ms)
-    ✓ rejeita quantidade inválida (-3) (5 ms)
-    ✓ rejeita quantidade inválida ("abc") (3 ms)
-    ✓ rejeita quantidade inválida (1.5) (12 ms)
-    ✓ transação: se o histórico falhar, o saldo NÃO é alterado (rollback) (13 ms)
-    ✓ saldo atual = soma das movimentações (consistência saldo x histórico) (3 ms)
-    ✓ histórico é restrito ao admin (4 ms)
-    ✓ exclusão lógica: some do catálogo, mas o registro e o histórico permanecem (15 ms)
+    ✓ estoque inicial gera movimentação de entrada
+    ✓ entrada de estoque soma ao saldo e registra saldo antes/depois
+    ✓ rejeita quantidade inválida (0)
+    ✓ rejeita quantidade inválida (-3)
+    ✓ rejeita quantidade inválida ("abc")
+    ✓ rejeita quantidade inválida (1.5)
+    ✓ transação: se o histórico falhar, o saldo NÃO é alterado (rollback)
+    ✓ saldo atual = soma das movimentações (consistência saldo x histórico)
+    ✓ histórico é restrito ao admin
+    ✓ exclusão lógica: some do catálogo, mas o registro e o histórico permanecem
 
 PASS tests/unit.test.js
   Validação de CPF (utils/cpf)
-    ✓ aceita CPF válido 52998224725 (1 ms)
-    ✓ aceita CPF válido 11144477735 (1 ms)
+    ✓ aceita CPF válido 52998224725
+    ✓ aceita CPF válido 11144477735
     ✓ aceita CPF válido 12345678909
     ✓ rejeita CPF inválido: dígito verificador errado
-    ✓ rejeita CPF inválido: sequência repetida (1 ms)
+    ✓ rejeita CPF inválido: sequência repetida
     ✓ rejeita CPF inválido: menos de 11 dígitos
     ✓ rejeita CPF inválido: com letras
     ✓ rejeita CPF inválido: com máscara (a máscara é removida antes, no validator)
   Maioridade (RN01)
-    ✓ aceita quem completa 18 anos hoje (1 ms)
+    ✓ aceita quem completa 18 anos hoje
     ✓ rejeita quem faz 18 anos amanhã
-    ✓ rejeita menor de idade (1 ms)
+    ✓ rejeita menor de idade
   Transformações (utils/normalize)
-    ✓ cleanText remove tags, espaços repetidos e preserva apóstrofo (2 ms)
-    ✓ cleanText trata null/undefined como texto vazio (1 ms)
+    ✓ cleanText remove tags, espaços repetidos e preserva apóstrofo
+    ✓ cleanText trata null/undefined como texto vazio
     ✓ normalizeCategoria padroniza capitalização e mantém siglas
     ✓ emptyToNull converte vazio em null
-    ✓ roundMoney arredonda para 2 casas (1 ms)
+    ✓ roundMoney arredonda para 2 casas
 
-Test Suites: 2 passed, 2 total
-Tests:       56 passed, 56 total
+Test Suites: 4 passed, 4 total
+Tests:       110 passed, 110 total
 Snapshots:   0 total
-Time:        1.965 s, estimated 3 s
+Time:        3.096 s
 Ran all test suites.

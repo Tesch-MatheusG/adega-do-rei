@@ -3,6 +3,7 @@ const cors = require('cors');
 const authRoutes = require('./routes/authRoutes');
 const productRoutes = require('./routes/productRoutes');
 const reservaRoutes = require('./routes/reservaRoutes');
+const categoriaRoutes = require('./routes/categoriaRoutes');
 
 const app = express();
 
@@ -18,6 +19,7 @@ app.use(express.json());
 app.get('/', (req, res) => res.json({ api: 'Adega do Rei', status: 'online' }));
 app.use('/api/auth', authRoutes);
 app.use('/api/produtos', productRoutes);
+app.use('/api/categorias', categoriaRoutes);
 app.use('/api/reservas', reservaRoutes);
 
 // Rota inexistente

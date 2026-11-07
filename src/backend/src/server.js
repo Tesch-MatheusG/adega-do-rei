@@ -2,6 +2,7 @@ require('dotenv').config({ quiet: true });
 const app = require('./app');
 const { sequelize } = require('./models');
 const { iniciarAgendadorExpiracao } = require('./services/reservaService');
+const { sincronizarCategorias } = require('./services/categoriaService');
 
 const PORT = process.env.PORT || 3000;
 
@@ -12,6 +13,10 @@ async function start() {
 
     // Cria/atualiza as tabelas a partir dos Models (suficiente para o PI)
     await sequelize.sync();
+
+    // Garante que as categorias dos produtos já existentes estejam na lista oficial
+    const novas = await sincronizarCategorias();
+    if (novas > 0) console.log(`Categorias cadastradas automaticamente: ${novas}.`);
 
     app.listen(PORT, () => console.log(`API rodando em http://localhost:${PORT}`));
 
