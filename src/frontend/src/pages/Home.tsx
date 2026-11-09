@@ -7,11 +7,10 @@ export default function Home() {
     <div>
       <section className="border-b border-border">
         <div className="container-page py-24 max-w-2xl">
-          <p className="text-gold text-sm mb-3">Adega premium de bebidas raras</p>
-          <h1 className="font-serif text-5xl leading-tight mb-5">Onde cada garrafa conta a história</h1>
+          <h1 className="font-serif text-5xl leading-tight mb-5">Onde cada garrafa conta uma história</h1>
           <p className="text-muted mb-8">
-            Vinhos, whiskies, cervejas artesanais, gins e muito mais. Curadoria de bebidas premium de
-            todos os cantos do mundo, guardadas em condições perfeitas para elevar qualquer ocasião.
+            Vinhos, whiskies, cervejas, gins e muito mais. O reino das melhores bebidas, para
+            atender o gosto da realeza.
           </p>
           <Link to="/catalogo" className="btn-primary">Explorar Bebidas</Link>
         </div>
