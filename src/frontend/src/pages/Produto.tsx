@@ -5,6 +5,7 @@ import type { Produto } from '../types';
 import { formatarPreco } from '../lib/format';
 import { useCart } from '../context/CartContext';
 import ProductCard from '../components/ProductCard';
+import ProdutoImagem from '../components/ProdutoImagem';
 
 export default function ProdutoPage() {
   const { id } = useParams();
@@ -37,8 +38,8 @@ export default function ProdutoPage() {
   return (
     <div className="container-page py-10">
       <div className="grid md:grid-cols-2 gap-10 mb-16">
-        <div className="card aspect-square flex items-center justify-center">
-          <span className="text-6xl font-serif text-gold/40">{produto.nome.charAt(0)}</span>
+        <div className="card aspect-square overflow-hidden">
+          <ProdutoImagem produto={produto} inicialClassName="text-6xl" />
         </div>
 
         <div>

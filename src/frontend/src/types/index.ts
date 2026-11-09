@@ -18,6 +18,7 @@ export interface Produto {
   descricao: string | null;
   estoque: number;
   ativo: boolean;
+  imagemUrl?: string | null; // caminho da foto (relativo à API); null = sem foto
 }
 
 export interface ApiErro {

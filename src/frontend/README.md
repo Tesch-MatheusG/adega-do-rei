@@ -83,6 +83,10 @@ o axios diretamente, então trocar a URL da API (local, Render) não exige mexer
    com filtro por status. O Dashboard mostra o número de reservas pendentes.
 5. Reservas não retiradas em 24h expiram sozinhas no backend.
 
+### Fotos dos produtos
+
+O admin escolhe a foto em **Cadastrar Novo Produto** (campo opcional) ou, para produtos já cadastrados, na tela **Estoque** (botões **+ Foto**, **Trocar foto** e **Remover foto**). Antes de enviar, `lib/imagem.ts` reduz a imagem no navegador (lado maior de até 900 px, WebP ou JPEG). O componente `ProdutoImagem` mostra a foto no catálogo, na página do produto, no carrinho e no estoque, e usa a inicial do nome quando o produto não tem foto ou a imagem não carrega.
+
 ### O que ainda não está conectado
 
 - **Fotos dos produtos**: hoje é um placeholder com a inicial do nome.

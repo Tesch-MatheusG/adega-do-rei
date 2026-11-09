@@ -6,6 +6,7 @@ import { useAuth } from '../context/AuthContext';
 import type { Produto } from '../types';
 import { formatarPreco } from '../lib/format';
 import { useCart } from '../context/CartContext';
+import ProdutoImagem from '../components/ProdutoImagem';
 
 // O carrinho fica no navegador (CartContext) até o cliente confirmar. Ao confirmar,
 // a reserva é gravada no backend, que confere maioridade e estoque e já baixa o estoque.
@@ -95,8 +96,8 @@ export default function Reservas() {
         <div className="space-y-4">
           {linhas.map(({ item, produto }) => (
             <div key={item.produtoId} className="card flex items-center gap-4 p-4">
-              <div className="w-16 h-16 bg-surface-2 rounded flex items-center justify-center font-serif text-gold/40">
-                {produto!.nome.charAt(0)}
+              <div className="w-16 h-16 bg-surface-2 rounded overflow-hidden shrink-0">
+                <ProdutoImagem produto={produto!} inicialClassName="text-xl" />
               </div>
               <div className="flex-1">
                 <p className="font-medium">{produto!.nome}</p>

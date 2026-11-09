@@ -52,3 +52,23 @@ export async function registrarEntradaEstoque(id: number, quantidade: number): P
     throw new Error(getErrorMessage(err));
   }
 }
+
+// Envia (ou troca) a foto do produto. O arquivo já deve ter passado por prepararImagem().
+export async function enviarImagemProduto(id: number, imagem: Blob): Promise<Produto> {
+  try {
+    const form = new FormData();
+    form.append('imagem', imagem, imagem.type === 'image/webp' ? 'foto.webp' : 'foto.jpg');
+    const res = await api.put<Produto>(`/produtos/${id}/imagem`, form);
+    return res.data;
+  } catch (err) {
+    throw new Error(getErrorMessage(err));
+  }
+}
+
+export async function removerImagemProduto(id: number): Promise<void> {
+  try {
+    await api.delete(`/produtos/${id}/imagem`);
+  } catch (err) {
+    throw new Error(getErrorMessage(err));
+  }
+}
