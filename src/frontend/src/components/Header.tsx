@@ -18,7 +18,6 @@ export default function Header() {
           <span className="w-9 h-9 rounded-full bg-wine flex items-center justify-center font-serif text-lg text-gold-soft">R</span>
           <span>
             <span className="block font-serif text-lg leading-none">Adega do Rei</span>
-            <span className="block text-[10px] tracking-wide text-muted leading-none mt-1">Bebidas Premium</span>
           </span>
         </Link>
 
