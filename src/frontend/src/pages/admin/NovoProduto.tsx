@@ -1,6 +1,7 @@
-import { useEffect, useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type ChangeEvent, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { criarProduto } from '../../services/produtosService';
+import { criarProduto, enviarImagemProduto } from '../../services/produtosService';
+import { prepararImagem } from '../../lib/imagem';
 import { listarCategorias, criarCategoria } from '../../services/categoriasService';
 import type { Categoria } from '../../types';
 
@@ -17,6 +18,34 @@ export default function NovoProduto() {
   const [nomeNovaCategoria, setNomeNovaCategoria] = useState('');
   const [erroCategoria, setErroCategoria] = useState('');
   const [salvandoCategoria, setSalvandoCategoria] = useState(false);
+
+  // Foto opcional: já é reduzida ao escolher o arquivo, e só é enviada depois do produto criado
+  const [foto, setFoto] = useState<Blob | null>(null);
+  const [previa, setPrevia] = useState<string | null>(null);
+  const [erroFoto, setErroFoto] = useState('');
+  const inputFoto = useRef<HTMLInputElement>(null);
+
+  useEffect(() => () => { if (previa) URL.revokeObjectURL(previa); }, [previa]);
+
+  async function escolherFoto(e: ChangeEvent<HTMLInputElement>) {
+    const arquivo = e.target.files?.[0];
+    e.target.value = ''; // permite escolher o mesmo arquivo de novo
+    if (!arquivo) return;
+    setErroFoto('');
+    try {
+      const pronta = await prepararImagem(arquivo);
+      setFoto(pronta);
+      setPrevia(URL.createObjectURL(pronta));
+    } catch (err) {
+      setErroFoto(err instanceof Error ? err.message : 'Não foi possível usar essa imagem.');
+    }
+  }
+
+  function removerFoto() {
+    setFoto(null);
+    setPrevia(null);
+    setErroFoto('');
+  }
 
   useEffect(() => {
     listarCategorias()
@@ -54,7 +83,7 @@ export default function NovoProduto() {
     }
     setEnviando(true);
     try {
-      await criarProduto({
+      const criado = await criarProduto({
         nome: form.nome,
         categoria: form.categoria,
         preco: Number(form.preco),
@@ -62,6 +91,14 @@ export default function NovoProduto() {
         descricao: form.descricao || null,
         estoque: form.estoque ? Number(form.estoque) : 0,
       });
+      if (foto) {
+        try {
+          await enviarImagemProduto(criado.id, foto);
+        } catch (err) {
+          // O produto já existe: avisa e segue, a foto pode ser enviada depois na tela de estoque
+          alert(`Produto cadastrado, mas a foto não foi enviada: ${err instanceof Error ? err.message : 'erro desconhecido'}. Você pode enviar a foto na tela de estoque.`);
+        }
+      }
       navigate('/admin/estoque');
     } catch (err) {
       setErro(err instanceof Error ? err.message : 'Não foi possível cadastrar o produto.');
@@ -128,6 +165,24 @@ export default function NovoProduto() {
         <div>
           <label className="field-label">Descrição</label>
           <textarea className="input" rows={3} value={form.descricao} onChange={(e) => campo('descricao', e.target.value)} />
+        </div>
+
+        <div>
+          <label className="field-label">Foto do produto (opcional)</label>
+          <div className="flex items-center gap-4">
+            <div className="w-24 h-24 bg-surface-2 rounded overflow-hidden flex items-center justify-center text-muted text-xs text-center">
+              {previa ? <img src={previa} alt="Prévia da foto" className="w-full h-full object-cover" /> : 'Sem foto'}
+            </div>
+            <div className="space-y-2">
+              <input ref={inputFoto} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={escolherFoto} />
+              <button type="button" className="btn-outline text-sm" onClick={() => inputFoto.current?.click()}>
+                {previa ? 'Trocar foto' : 'Escolher foto'}
+              </button>
+              {previa && <button type="button" className="block text-sm text-muted hover:underline" onClick={removerFoto}>Remover foto</button>}
+              <p className="text-xs text-muted">JPG, PNG ou WebP. A imagem é reduzida automaticamente.</p>
+            </div>
+          </div>
+          {erroFoto && <p className="text-danger text-sm mt-2">{erroFoto}</p>}
         </div>
 
         {erro && <p className="text-danger text-sm">{erro}</p>}

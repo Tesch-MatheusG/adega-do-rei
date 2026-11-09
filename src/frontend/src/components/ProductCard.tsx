@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import type { Produto } from '../types';
 import { formatarPreco } from '../lib/format';
+import ProdutoImagem from './ProdutoImagem';
 
 export default function ProductCard({ produto }: { produto: Produto }) {
   const semEstoque = produto.estoque <= 0;
@@ -8,10 +9,7 @@ export default function ProductCard({ produto }: { produto: Produto }) {
   return (
     <div className="card group">
       <Link to={`/produto/${produto.id}`} className="block aspect-[4/5] bg-surface-2 overflow-hidden">
-        {/* Sem imagens reais ainda: placeholder com a inicial do produto */}
-        <div className="w-full h-full flex items-center justify-center text-4xl font-serif text-gold/40">
-          {produto.nome.charAt(0)}
-        </div>
+        <ProdutoImagem produto={produto} />
       </Link>
       <div className="p-4">
         <p className="text-xs text-muted uppercase tracking-wide">{produto.categoria}</p>

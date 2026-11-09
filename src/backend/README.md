@@ -51,6 +51,9 @@ src/
 | PUT | `/api/produtos/:id` | Admin | Atualiza produto |
 | PATCH | `/api/produtos/:id/estoque` | Admin | Entrada de estoque (`{"quantidade": 12, "motivo": "opcional"}`) |
 | GET | `/api/produtos/:id/movimentacoes` | Admin | Histórico de movimentações do estoque do produto |
+| GET | `/api/produtos/:id/imagem` | Público | Foto do produto (bytes, para usar em `<img src>`); 404 se não tiver |
+| PUT | `/api/produtos/:id/imagem` | Admin | Envia ou troca a foto (`multipart/form-data`, campo `imagem`) |
+| DELETE | `/api/produtos/:id/imagem` | Admin | Remove a foto |
 | DELETE | `/api/produtos/:id` | Admin | Remove do catálogo (exclusão lógica) |
 | POST | `/api/reservas` | Cliente | Cria reserva (`{"itens":[{"produtoId":1,"quantidade":2}],"retiradaPrevista":"2026-11-10T15:00:00Z"}`); valida maioridade e estoque e já baixa o estoque |
 | GET | `/api/reservas/minhas` | Cliente | Reservas do cliente logado |
@@ -152,6 +155,17 @@ rodar localmente e rodar em produção.
   Aiven acima e o `CORS_ORIGIN` apontando para a URL pública do frontend).
 - O Render define sua própria `PORT` automaticamente; o `server.js` já lê
   `process.env.PORT`, então nada precisa ser alterado para isso.
+
+## Imagens dos produtos — como funciona
+
+O administrador envia a foto pelo painel (cadastro de produto ou tela de estoque), sem mexer no código nem no repositório.
+
+- **Onde fica a foto:** na tabela `produto_imagens` do próprio MySQL (Aiven), uma por produto. O disco do Render (plano gratuito) é apagado a cada deploy, então arquivos gravados nele se perderiam, e usar um serviço externo (S3, Cloudinary) exigiria outra conta e chaves. A tabela é criada sozinha na inicialização.
+- **Envio:** `PUT /api/produtos/:id/imagem`, só para admin, em `multipart/form-data` com o campo `imagem`. O frontend reduz a foto no navegador (lado maior de até 900 px, WebP ou JPEG) antes de enviar, então ela chega leve.
+- **Validação:** o tipo é conferido pelos primeiros bytes do arquivo (JPEG, PNG ou WebP), e não pelo nome nem pelo `Content-Type`, que podem ser forjados. Outro formato ou um arquivo que finge ser imagem responde `415`. Acima de 2 MB responde `413`.
+- **Leitura:** `GET /api/produtos/:id/imagem` é público e devolve a imagem com o tipo correto e cache de 1 dia. As listagens (`GET /api/produtos` e `/:id`) trazem só o campo `imagemUrl` (ex.: `/produtos/7/imagem?v=1731100000000`, relativo à base da API), nunca os bytes. O `v` muda quando a foto é trocada, para o navegador não mostrar a antiga.
+- **Sem foto:** `imagemUrl` vem `null`, e o frontend mostra a inicial do nome do produto.
+- **Exclusão lógica:** produto removido do catálogo deixa de servir a foto.
 
 ## Categorias — como funciona
 

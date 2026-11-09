@@ -1,6 +1,8 @@
 const { fn, col, where: sqlWhere, Op } = require('sequelize');
 const { Product, StockMovement, sequelize } = require('../models');
 const { normalizeCategoria } = require('../utils/normalize');
+const { detectarTipoImagem } = require('../utils/imagem');
+const imagens = require('../services/imagemService');
 
 // GET /api/produtos?categoria=Cerveja   (público)
 async function listar(req, res) {
@@ -9,7 +11,7 @@ async function listar(req, res) {
     if (req.query.categoria) where.categoria = normalizeCategoria(req.query.categoria);
 
     const produtos = await Product.findAll({ where, order: [['nome', 'ASC']] });
-    return res.json(produtos);
+    return res.json(await imagens.comImagem(produtos));
   } catch (err) {
     console.error(err);
     return res.status(500).json({ erro: 'Erro interno ao listar produtos.' });
@@ -21,7 +23,7 @@ async function buscar(req, res) {
   try {
     const produto = await Product.findOne({ where: { id: req.params.id, ativo: true } });
     if (!produto) return res.status(404).json({ erro: 'Produto não encontrado.' });
-    return res.json(produto);
+    return res.json(await imagens.comImagem(produto));
   } catch (err) {
     console.error(err);
     return res.status(500).json({ erro: 'Erro interno.' });
@@ -66,7 +68,7 @@ async function criar(req, res) {
       return novo;
     });
 
-    return res.status(201).json(produto);
+    return res.status(201).json(await imagens.comImagem(produto));
   } catch (err) {
     console.error(err);
     return res.status(500).json({ erro: 'Erro interno ao cadastrar produto.' });
@@ -91,7 +93,7 @@ async function atualizar(req, res) {
       campos[campo] = req.body[campo];
     }
     await produto.update(campos);
-    return res.json(produto);
+    return res.json(await imagens.comImagem(produto));
   } catch (err) {
     console.error(err);
     return res.status(500).json({ erro: 'Erro interno ao atualizar produto.' });
@@ -127,7 +129,7 @@ async function entradaEstoque(req, res) {
     });
 
     if (!produto) return res.status(404).json({ erro: 'Produto não encontrado.' });
-    return res.json({ mensagem: 'Entrada registrada.', produto });
+    return res.json({ mensagem: 'Entrada registrada.', produto: await imagens.comImagem(produto) });
   } catch (err) {
     console.error(err);
     return res.status(500).json({ erro: 'Erro interno ao registrar entrada.' });
@@ -165,4 +167,53 @@ async function remover(req, res) {
   }
 }
 
-module.exports = { listar, buscar, criar, atualizar, entradaEstoque, movimentacoes, remover };
+// GET /api/produtos/:id/imagem   (público) - bytes da foto, para usar direto no <img src>
+async function imagem(req, res) {
+  try {
+    if (!(await imagens.produtoAtivo(req.params.id))) return res.status(404).json({ erro: 'Produto não encontrado.' });
+    const foto = await imagens.buscarImagem(req.params.id);
+    if (!foto) return res.status(404).json({ erro: 'Este produto não tem foto.' });
+
+    res.set('Content-Type', foto.tipo);
+    res.set('Cache-Control', 'public, max-age=86400'); // a URL muda (?v=) quando a foto é trocada
+    return res.send(foto.dados);
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ erro: 'Erro interno ao carregar a imagem.' });
+  }
+}
+
+// PUT /api/produtos/:id/imagem   (admin) - envia ou troca a foto (multipart, campo "imagem")
+async function salvarImagem(req, res) {
+  try {
+    if (!req.file) return res.status(400).json({ erro: 'Envie a imagem no campo "imagem".' });
+
+    // Valida o conteúdo real do arquivo, não o nome nem o Content-Type informados
+    const tipo = detectarTipoImagem(req.file.buffer);
+    if (!tipo) return res.status(415).json({ erro: 'Formato não suportado. Envie uma imagem JPG, PNG ou WebP.' });
+
+    const produto = await Product.findOne({ where: { id: req.params.id, ativo: true } });
+    if (!produto) return res.status(404).json({ erro: 'Produto não encontrado.' });
+
+    await imagens.salvarImagem(produto.id, req.file.buffer, tipo);
+    return res.json(await imagens.comImagem(produto));
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ erro: 'Erro interno ao salvar a imagem.' });
+  }
+}
+
+// DELETE /api/produtos/:id/imagem   (admin) - remove a foto (o produto volta a usar o placeholder)
+async function removerImagem(req, res) {
+  try {
+    if (!(await imagens.produtoAtivo(req.params.id))) return res.status(404).json({ erro: 'Produto não encontrado.' });
+    const removidas = await imagens.removerImagem(req.params.id);
+    if (!removidas) return res.status(404).json({ erro: 'Este produto não tem foto.' });
+    return res.status(204).send();
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ erro: 'Erro interno ao remover a imagem.' });
+  }
+}
+
+module.exports = { imagem, salvarImagem, removerImagem, listar, buscar, criar, atualizar, entradaEstoque, movimentacoes, remover };
