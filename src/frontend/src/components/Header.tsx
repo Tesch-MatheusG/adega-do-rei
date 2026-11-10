@@ -1,6 +1,8 @@
 import { NavLink, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
+import Logo from './Logo';
+import { MOSTRAR_NOME_AO_LADO_DA_LOGO } from '../lib/imagens';
 
 const linkClass = ({ isActive }: { isActive: boolean }) =>
   `text-sm transition-colors ${isActive ? 'text-gold' : 'text-ink hover:text-gold'}`;
@@ -15,10 +17,13 @@ export default function Header() {
     <header className="border-b border-border">
       <div className="container-page h-16 flex items-center justify-between gap-6">
         <Link to="/" className="flex items-center gap-2 shrink-0">
-          <span className="w-9 h-9 rounded-full bg-wine flex items-center justify-center font-serif text-lg text-gold-soft">R</span>
-          <span>
-            <span className="block font-serif text-lg leading-none">Adega do Rei</span>
-          </span>
+          <Logo />
+          {MOSTRAR_NOME_AO_LADO_DA_LOGO && (
+            <span>
+              <span className="block font-serif text-lg leading-none">Adega do Rei</span>
+              <span className="block text-[10px] tracking-wide text-muted leading-none mt-1">Bebidas Premium</span>
+            </span>
+          )}
         </Link>
 
         <nav className="hidden md:flex items-center gap-6">
