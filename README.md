@@ -33,7 +33,7 @@ A Adega do Rei controlava o estoque manualmente (papel e caneta) e atendia pedid
 | Expiração automática de reservas não retiradas em 24h | Pronto |
 | Publicação na nuvem (site, API e banco) | Pronto |
 | Edição de produto e consulta do histórico pelo painel (a API já existe) | Em andamento |
-| Fotos dos produtos | Pendente |
+| Fotos dos produtos | Pronto |
 | Saída manual de estoque (perda ou quebra) | Pendente |
 | Relatório de produtos mais reservados | Pendente |
 | Backup automático do banco e análise de custo | Pendente |
