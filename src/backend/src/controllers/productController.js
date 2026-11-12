@@ -3,6 +3,7 @@ const { Product, StockMovement, sequelize } = require('../models');
 const { normalizeCategoria } = require('../utils/normalize');
 const { detectarTipoImagem } = require('../utils/imagem');
 const imagens = require('../services/imagemService');
+const { MOTIVOS_BAIXA } = require('../validators/productValidators');
 
 // GET /api/produtos?categoria=Cerveja   (público)
 async function listar(req, res) {
@@ -136,6 +137,47 @@ async function entradaEstoque(req, res) {
   }
 }
 
+// PATCH /api/produtos/:id/baixa   (admin) - baixa manual por quebra, perda, vencimento etc.
+// Mesma lógica da entrada (transação + trava de linha), com uma regra a mais: o saldo nunca fica negativo.
+async function baixaEstoque(req, res) {
+  try {
+    const { quantidade, motivo, observacao } = req.body;
+    const rotulo = MOTIVOS_BAIXA[motivo];
+
+    const resultado = await sequelize.transaction(async (t) => {
+      const atual = await Product.findOne({
+        where: { id: req.params.id, ativo: true },
+        transaction: t,
+        lock: t.LOCK.UPDATE,
+      });
+      if (!atual) return { naoEncontrado: true };
+      if (atual.estoque < quantidade) return { insuficiente: atual.estoque };
+
+      const saldoAnterior = atual.estoque;
+      await atual.decrement('estoque', { by: quantidade, transaction: t });
+      await StockMovement.create(
+        {
+          produtoId: atual.id, usuarioId: req.user.id, tipo: 'saida', quantidade,
+          saldoAnterior, saldoPosterior: saldoAnterior - quantidade,
+          motivo: observacao ? `${rotulo}: ${observacao}` : rotulo,
+        },
+        { transaction: t }
+      );
+      await atual.reload({ transaction: t });
+      return { produto: atual };
+    });
+
+    if (resultado.naoEncontrado) return res.status(404).json({ erro: 'Produto não encontrado.' });
+    if (resultado.insuficiente !== undefined) {
+      return res.status(409).json({ erro: `Baixa maior que o estoque atual (restam ${resultado.insuficiente}).` });
+    }
+    return res.json({ mensagem: 'Baixa registrada.', produto: await imagens.comImagem(resultado.produto) });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ erro: 'Erro interno ao registrar baixa.' });
+  }
+}
+
 // GET /api/produtos/:id/movimentacoes   (admin) - histórico do estoque
 async function movimentacoes(req, res) {
   try {
@@ -216,4 +258,4 @@ async function removerImagem(req, res) {
   }
 }
 
-module.exports = { imagem, salvarImagem, removerImagem, listar, buscar, criar, atualizar, entradaEstoque, movimentacoes, remover };
+module.exports = { imagem, salvarImagem, removerImagem, listar, buscar, criar, atualizar, entradaEstoque, baixaEstoque, movimentacoes, remover };

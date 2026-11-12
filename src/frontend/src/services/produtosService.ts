@@ -1,5 +1,5 @@
 import { api, getErrorMessage } from '../lib/api';
-import type { Produto } from '../types';
+import type { Movimentacao, Produto } from '../types';
 
 // Chama o backend de verdade (Node/Express + MySQL). As assinaturas destas
 // funções são as mesmas usadas quando o projeto rodava com dados simulados
@@ -48,6 +48,27 @@ export async function registrarEntradaEstoque(id: number, quantidade: number): P
   try {
     const res = await api.patch<{ produto: Produto }>(`/produtos/${id}/estoque`, { quantidade });
     return res.data.produto;
+  } catch (err) {
+    throw new Error(getErrorMessage(err));
+  }
+}
+
+export type MotivoBaixa = 'quebra' | 'perda' | 'vencimento' | 'furto' | 'outro';
+
+// Baixa manual (quebra, perda...). Os motivos são os mesmos aceitos pelo backend.
+export async function registrarBaixaEstoque(id: number, dados: { quantidade: number; motivo: MotivoBaixa; observacao?: string }): Promise<Produto> {
+  try {
+    const res = await api.patch<{ produto: Produto }>(`/produtos/${id}/baixa`, dados);
+    return res.data.produto;
+  } catch (err) {
+    throw new Error(getErrorMessage(err));
+  }
+}
+
+export async function listarMovimentacoes(id: number): Promise<Movimentacao[]> {
+  try {
+    const res = await api.get<Movimentacao[]>(`/produtos/${id}/movimentacoes`);
+    return res.data;
   } catch (err) {
     throw new Error(getErrorMessage(err));
   }
