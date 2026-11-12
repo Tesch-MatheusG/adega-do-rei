@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import { listarProdutos, registrarEntradaEstoque, enviarImagemProduto, removerImagemProduto } from '../../services/produtosService';
 import { prepararImagem } from '../../lib/imagem';
 import ProdutoImagem from '../../components/ProdutoImagem';
+import BaixaEstoqueModal from '../../components/BaixaEstoqueModal';
+import HistoricoEstoqueModal from '../../components/HistoricoEstoqueModal';
 import type { Produto } from '../../types';
 import { formatarPreco } from '../../lib/format';
 
@@ -15,6 +17,8 @@ export default function Estoque() {
   const inputFoto = useRef<HTMLInputElement>(null);
   const [produtoDaFoto, setProdutoDaFoto] = useState<number | null>(null);
   const [ocupado, setOcupado] = useState<number | null>(null);
+  const [baixando, setBaixando] = useState<Produto | null>(null);
+  const [verHistorico, setVerHistorico] = useState<Produto | null>(null);
 
   function carregar() { listarProdutos().then(setProdutos); }
   useEffect(carregar, []);
@@ -107,6 +111,8 @@ export default function Estoque() {
                 <td className="p-3">
                   <div className="flex flex-wrap gap-x-4 gap-y-1">
                     <button className="text-gold hover:underline" onClick={() => registrarEntrada(p.id)}>+ Entrada</button>
+                    <button className="text-gold hover:underline disabled:opacity-50" disabled={p.estoque === 0} onClick={() => setBaixando(p)}>− Baixa</button>
+                    <button className="text-gold hover:underline" onClick={() => setVerHistorico(p)}>Histórico</button>
                     <button className="text-gold hover:underline disabled:opacity-50" disabled={ocupado === p.id} onClick={() => escolherFoto(p.id)}>
                       {ocupado === p.id ? 'Enviando...' : p.imagemUrl ? 'Trocar foto' : '+ Foto'}
                     </button>
@@ -122,6 +128,15 @@ export default function Estoque() {
           </tbody>
         </table>
       </div>
+
+      {baixando && (
+        <BaixaEstoqueModal
+          produto={baixando}
+          onFechar={() => setBaixando(null)}
+          onConcluido={() => { setBaixando(null); carregar(); }}
+        />
+      )}
+      {verHistorico && <HistoricoEstoqueModal produto={verHistorico} onFechar={() => setVerHistorico(null)} />}
     </div>
   );
 }

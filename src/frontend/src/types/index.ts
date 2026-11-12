@@ -52,3 +52,15 @@ export interface Categoria {
   id: number;
   nome: string;
 }
+
+export interface Movimentacao {
+  id: number;
+  produtoId: number;
+  usuarioId: number | null;
+  tipo: 'entrada' | 'saida' | 'reserva' | 'ajuste';
+  quantidade: number;
+  saldoAnterior: number;
+  saldoPosterior: number;
+  motivo: string | null;
+  createdAt: string;
+}

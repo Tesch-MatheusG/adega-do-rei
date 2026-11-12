@@ -64,4 +64,24 @@ const stockEntryRules = [
   body('motivo').optional(opt).customSanitizer(emptyToNull),
 ];
 
-module.exports = { createRules, updateRules, idOnlyRules, stockEntryRules };
+// Baixa manual (quebra, perda...): o motivo vem de uma lista fixa para os relatórios ficarem consistentes
+const MOTIVOS_BAIXA = { quebra: 'Quebra', perda: 'Perda', vencimento: 'Vencimento', furto: 'Furto/extravio', outro: 'Outro' };
+
+const stockWriteOffRules = [
+  idRule,
+  body('quantidade').isInt({ min: 1 }).withMessage('Quantidade deve ser um inteiro maior que zero.').toInt(),
+  body('motivo')
+    .customSanitizer((v) => String(v ?? '').trim().toLowerCase())
+    .isIn(Object.keys(MOTIVOS_BAIXA)).withMessage(`Motivo deve ser um de: ${Object.keys(MOTIVOS_BAIXA).join(', ')}.`),
+  body('observacao')
+    .optional(opt)
+    .customSanitizer(emptyToNull)
+    .isLength({ max: 150 }).withMessage('Observação deve ter no máximo 150 caracteres.'),
+  // "Outro" não diz nada sozinho: exigimos uma explicação para a auditoria
+  body('observacao').custom((valor, { req }) => {
+    if (req.body.motivo === 'outro' && !valor) throw new Error('Descreva o motivo na observação.');
+    return true;
+  }),
+];
+
+module.exports = { createRules, updateRules, idOnlyRules, stockEntryRules, stockWriteOffRules, MOTIVOS_BAIXA };
