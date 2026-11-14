@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { listarProdutos } from '../services/produtosService';
 import type { Produto } from '../types';
 import ProductCard from '../components/ProductCard';
+import { buscarProdutos } from '../lib/busca';
 
 export default function Catalogo() {
   const [produtos, setProdutos] = useState<Produto[]>([]);
@@ -14,9 +15,11 @@ export default function Catalogo() {
   }, []);
 
   const categorias = Array.from(new Set(produtos.map((p) => p.categoria)));
-  const filtrados = produtos
-    .filter((p) => p.nome.toLowerCase().includes(busca.toLowerCase()))
-    .filter((p) => !categoria || p.categoria === categoria);
+  // A pesquisa olha o nome E a categoria; o filtro lateral de categoria continua valendo junto
+  const filtrados = buscarProdutos(
+    produtos.filter((p) => !categoria || p.categoria === categoria),
+    busca
+  );
 
   return (
     <div className="container-page py-10">
@@ -28,7 +31,7 @@ export default function Catalogo() {
           <div>
             <input
               className="input"
-              placeholder="Pesquisar por nome..."
+              placeholder="Pesquisar por nome ou categoria..."
               value={busca}
               onChange={(e) => setBusca(e.target.value)}
             />
