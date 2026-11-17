@@ -1,5 +1,6 @@
 const { body, param, query } = require('express-validator');
 const Reserva = require('../models/Reserva');
+const { dentroDoHorarioDeFuncionamento } = require('../utils/horario');
 
 const idRule = param('id').isInt({ min: 1 }).withMessage('ID inválido.').toInt();
 const opt = { values: 'null' };
@@ -28,6 +29,10 @@ const createRules = [
       if (data.getTime() < agora - 5 * 60 * 1000) throw new Error('A data de retirada não pode estar no passado.');
       if (data.getTime() > agora + MAX_DIAS_ANTECEDENCIA * 24 * 3600 * 1000) {
         throw new Error(`A retirada deve ser agendada em até ${MAX_DIAS_ANTECEDENCIA} dias.`);
+      }
+      // A adega funciona todos os dias, das 08h às 23h (horário de Brasília)
+      if (!dentroDoHorarioDeFuncionamento(data)) {
+        throw new Error('A adega funciona todos os dias das 08h às 23h. Escolha um horário de retirada nesse intervalo.');
       }
       return true;
     }),

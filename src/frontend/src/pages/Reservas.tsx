@@ -7,6 +7,7 @@ import type { Produto } from '../types';
 import { formatarPreco } from '../lib/format';
 import { useCart } from '../context/CartContext';
 import ProdutoImagem from '../components/ProdutoImagem';
+import { TEXTO_FUNCIONAMENTO, gerarDias, gerarHorarios, montarISO } from '../lib/horarioRetirada';
 
 // O carrinho fica no navegador (CartContext) até o cliente confirmar. Ao confirmar,
 // a reserva é gravada no backend, que confere maioridade e estoque e já baixa o estoque.
@@ -17,7 +18,8 @@ export default function Reservas() {
   const location = useLocation();
   const [produtos, setProdutos] = useState<Produto[]>([]);
   const [confirmado, setConfirmado] = useState(false);
-  const [retirada, setRetirada] = useState(''); // valor do <input type="datetime-local">
+  const [dia, setDia] = useState('');   // AAAA-MM-DD; vazio = sem horário definido
+  const [hora, setHora] = useState('');  // HH:mm
   const [erro, setErro] = useState('');
   const [enviando, setEnviando] = useState(false);
 
@@ -40,7 +42,7 @@ export default function Reservas() {
     try {
       await criarReserva(
         linhas.map((l) => ({ produtoId: l.item.produtoId, quantidade: l.item.quantidade })),
-        retirada ? new Date(retirada).toISOString() : undefined
+        dia && hora ? montarISO(dia, hora) : undefined
       );
       limpar();
       setConfirmado(true);
@@ -51,13 +53,15 @@ export default function Reservas() {
     }
   }
 
-  // Limites do seletor de data: de agora até 7 dias (o backend valida de novo).
-  // Calculado uma única vez, ao abrir a tela.
-  const [limites] = useState(() => {
-    const paraInput = (d: Date) => new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
-    const agora = new Date();
-    return { min: paraInput(agora), max: paraInput(new Date(agora.getTime() + 7 * 24 * 3600 * 1000)) };
-  });
+  // Dias e horários oferecidos (seg. a dom., 8h às 23h). Calculados ao abrir a tela; o backend valida de novo.
+  const [agora] = useState(() => new Date());
+  const dias = gerarDias(agora);
+  const horarios = dia ? gerarHorarios(dia, agora) : [];
+
+  function escolherDia(novoDia: string) {
+    setDia(novoDia);
+    setHora(novoDia ? gerarHorarios(novoDia, agora)[0] ?? '' : ''); // já deixa o primeiro horário marcado
+  }
 
   if (produtos.length === 0) return <div className="container-page py-16 text-muted">Carregando...</div>;
 
@@ -117,12 +121,17 @@ export default function Reservas() {
 
       <aside className="card p-6 h-fit">
         <h2 className="font-serif text-xl mb-4">Detalhes de Retirada</h2>
-        <p className="text-sm text-muted mb-4">Seg. a Dom. — 7h às 23h</p>
-        <label className="field-label" htmlFor="retirada">Quando vai retirar? (opcional)</label>
-        <input
-          id="retirada" type="datetime-local" className="input mb-1"
-          min={limites.min} max={limites.max} value={retirada} onChange={(e) => setRetirada(e.target.value)}
-        />
+        <p className="text-sm text-muted mb-4">Funcionamento: {TEXTO_FUNCIONAMENTO}</p>
+        <label className="field-label" htmlFor="retirada-dia">Quando vai retirar? (opcional)</label>
+        <select id="retirada-dia" className="input mb-2" value={dia} onChange={(e) => escolherDia(e.target.value)}>
+          <option value="">Sem horário definido</option>
+          {dias.map((d) => <option key={d.valor} value={d.valor}>{d.rotulo}</option>)}
+        </select>
+        {dia && (
+          <select id="retirada-hora" className="input mb-1" aria-label="Horário de retirada" value={hora} onChange={(e) => setHora(e.target.value)}>
+            {horarios.map((h) => <option key={h} value={h}>{h}</option>)}
+          </select>
+        )}
         <p className="text-xs text-muted mb-6">A reserva vale por 24h após o horário combinado; depois disso expira e o estoque é liberado.</p>
         <div className="border-t border-border pt-4 flex justify-between mb-1 text-sm text-muted">
           <span>Subtotal das Bebidas</span><span>{formatarPreco(total)}</span>
