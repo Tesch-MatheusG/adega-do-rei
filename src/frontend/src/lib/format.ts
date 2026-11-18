@@ -3,6 +3,13 @@ export function formatarPreco(valor: number | string): string {
   return Number(valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 }
 
+// "1995-05-20" -> "20/05/1995". Trocamos as partes do texto em vez de usar new Date(), porque
+// "AAAA-MM-DD" é lido como meia-noite UTC e, no horário de Brasília, apareceria 1 dia antes.
+export function formatarData(dataISO: string): string {
+  const [ano, mes, dia] = dataISO.slice(0, 10).split('-');
+  return ano && mes && dia ? `${dia}/${mes}/${ano}` : dataISO;
+}
+
 export function formatarDataHora(iso: string): string {
   return new Date(iso).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' });
 }
