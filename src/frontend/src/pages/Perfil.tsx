@@ -1,5 +1,6 @@
 import { useAuth } from '../context/AuthContext';
 import { Link, useNavigate } from 'react-router-dom';
+import { formatarData } from '../lib/format';
 
 export default function Perfil() {
   const { usuario, logout } = useAuth();
@@ -15,7 +16,7 @@ export default function Perfil() {
       <div className="card p-6 space-y-3">
         <p><span className="text-muted">E-mail:</span> {usuario.email}</p>
         {usuario.cpf && <p><span className="text-muted">CPF:</span> {usuario.cpf}</p>}
-        {usuario.dataNascimento && <p><span className="text-muted">Nascimento:</span> {usuario.dataNascimento}</p>}
+        {usuario.dataNascimento && <p><span className="text-muted">Nascimento:</span> {formatarData(usuario.dataNascimento)}</p>}
         <p><span className="text-muted">Perfil:</span> {usuario.role === 'admin' ? 'Administrador' : 'Cliente'}</p>
       </div>
 
