@@ -72,6 +72,7 @@ Documentação do projeto, em [`docs/`](./docs):
 - [`casosDeUso.md`](./docs/casosDeUso.md): casos de uso
 - [`backlog.md`](./docs/backlog.md): backlog do produto
 - [`evidencias/resultado-testes.txt`](./docs/evidencias/resultado-testes.txt): resultado da última execução dos testes
+- [`custos.md`](./docs/custos.md): análise de custos e comparação com a AWS
 
 Cada parte tem o seu próprio README, com mais detalhes: [backend](./src/backend/README.md) e [frontend](./src/frontend/README.md).
 
