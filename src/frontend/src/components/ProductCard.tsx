@@ -8,8 +8,14 @@ export default function ProductCard({ produto }: { produto: Produto }) {
 
   return (
     <div className="card group">
-      <Link to={`/produto/${produto.id}`} className="block aspect-[4/5] bg-surface-2 overflow-hidden">
-        <ProdutoImagem produto={produto} />
+      <Link to={`/produto/${produto.id}`} className="relative block aspect-[4/5] bg-surface-2 overflow-hidden">
+        <div className={semEstoque ? 'h-full w-full opacity-40 grayscale' : 'h-full w-full'}>
+          <ProdutoImagem produto={produto} />
+        </div>
+        {/* RN09: sem estoque o produto continua no catálogo, marcado como indisponível */}
+        {semEstoque && (
+          <span className="badge absolute top-3 left-3 bg-bg/90 text-danger border border-danger/40">Indisponível</span>
+        )}
       </Link>
       <div className="p-4">
         <p className="text-xs text-muted uppercase tracking-wide">{produto.categoria}</p>
@@ -22,7 +28,7 @@ export default function ProductCard({ produto }: { produto: Produto }) {
             to={`/produto/${produto.id}`}
             className={semEstoque ? 'btn-outline text-xs pointer-events-none opacity-50' : 'btn-primary text-xs'}
           >
-            {semEstoque ? 'Esgotado' : 'Reservar'}
+            {semEstoque ? 'Indisponível' : 'Reservar'}
           </Link>
         </div>
       </div>
