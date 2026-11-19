@@ -31,7 +31,7 @@ export default function Catalogo() {
           <div>
             <input
               className="input"
-              placeholder="Pesquisar por nome ou categoria..."
+              placeholder="Nome ou categoria..."
               value={busca}
               onChange={(e) => setBusca(e.target.value)}
             />

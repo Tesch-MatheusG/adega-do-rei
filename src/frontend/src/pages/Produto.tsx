@@ -30,6 +30,8 @@ export default function ProdutoPage() {
   if (erro) return <div className="container-page py-16 text-danger">{erro}</div>;
   if (!produto) return <div className="container-page py-16 text-muted">Carregando...</div>;
 
+  const semEstoque = produto.estoque <= 0;
+
   function reservar() {
     adicionar(produto!.id, quantidade);
     navigate('/reservas');
@@ -44,8 +46,7 @@ export default function ProdutoPage() {
 
         <div>
           <div className="flex gap-2 mb-3">
-            <span className="badge-danger">Mais Reservado</span>
-            <span className="badge-success">Em Estoque</span>
+            {semEstoque ? <span className="badge-danger">Indisponível</span> : <span className="badge-success">Em Estoque</span>}
           </div>
           <h1 className="font-serif text-3xl mb-1">{produto.nome}</h1>
           <p className="text-muted mb-6">{produto.categoria}{produto.volumeMl ? ` · ${produto.volumeMl}ml` : ''}</p>
@@ -57,10 +58,10 @@ export default function ProdutoPage() {
             <div className="flex items-center border border-border rounded">
               <button className="px-3 py-2" onClick={() => setQuantidade((q) => Math.max(1, q - 1))}>−</button>
               <span className="px-3">{quantidade}</span>
-              <button className="px-3 py-2" onClick={() => setQuantidade((q) => q + 1)}>+</button>
+              <button className="px-3 py-2" onClick={() => setQuantidade((q) => Math.min(produto.estoque, q + 1))}>+</button>
             </div>
             <button className="btn-primary flex-1" disabled={produto.estoque <= 0} onClick={reservar}>
-              Reservar para Retirada
+              {semEstoque ? 'Produto indisponível' : 'Reservar para Retirada'}
             </button>
           </div>
 
