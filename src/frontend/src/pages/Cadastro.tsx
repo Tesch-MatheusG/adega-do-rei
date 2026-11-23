@@ -5,7 +5,7 @@ import { isValidCPF, isAdult } from '../lib/cpf';
 
 export default function Cadastro() {
   const navigate = useNavigate();
-  const [form, setForm] = useState({ nome: '', dataNascimento: '', cpf: '', email: '', senha: '', senha2: '', maior18: false });
+  const [form, setForm] = useState({ nome: '', dataNascimento: '', cpf: '', email: '', senha: '', senha2: '', maior18: false, aceitaPolitica: false });
   const [erro, setErro] = useState('');
   const [enviando, setEnviando] = useState(false);
 
@@ -19,6 +19,7 @@ export default function Cadastro() {
 
     if (form.senha !== form.senha2) { setErro('As senhas não coincidem.'); return; }
     if (!form.maior18) { setErro('É necessário declarar que é maior de 18 anos.'); return; }
+    if (!form.aceitaPolitica) { setErro('É necessário aceitar a Política de Privacidade para criar a conta.'); return; }
 
     // Checagem rápida no navegador, antes de gastar uma requisição —
     // o backend valida de novo de qualquer forma, então isso é só UX.
@@ -79,7 +80,16 @@ export default function Cadastro() {
         </div>
         <label className="flex items-start gap-2 text-sm text-muted">
           <input type="checkbox" className="mt-1" required checked={form.maior18} onChange={(e) => campo('maior18', e.target.checked)} />
-          <span>Declaro que tenho <strong className="text-gold">mais de 18 anos</strong> e concordo com os Termos de Uso e Política de Privacidade da Adega.</span>
+          <span>Declaro que tenho <strong className="text-gold">mais de 18 anos</strong>.</span>
+        </label>
+        <label className="flex items-start gap-2 text-sm text-muted">
+          <input type="checkbox" className="mt-1" required checked={form.aceitaPolitica} onChange={(e) => campo('aceitaPolitica', e.target.checked)} />
+          <span>
+            Li e concordo com a{' '}
+            {/* Abre em outra aba para o cliente não perder o que já digitou no formulário */}
+            <Link to="/privacidade" target="_blank" rel="noopener noreferrer" className="text-gold hover:underline">Política de Privacidade</Link>
+            {' '}e autorizo o uso dos meus dados (nome, CPF, data de nascimento e e-mail) para criar minha conta e gerenciar minhas reservas.
+          </span>
         </label>
 
         {erro && <p className="text-danger text-sm">{erro}</p>}
