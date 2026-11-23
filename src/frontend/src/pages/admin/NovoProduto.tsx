@@ -10,7 +10,7 @@ const NOVA = '__nova__';
 
 export default function NovoProduto() {
   const navigate = useNavigate();
-  const [form, setForm] = useState({ nome: '', categoria: '', preco: '', volumeMl: '', descricao: '', estoque: '' });
+  const [form, setForm] = useState({ nome: '', categoria: '', preco: '', volumeMl: '', descricao: '', estoque: '', estoqueMinimo: '' });
   const [erro, setErro] = useState('');
   const [enviando, setEnviando] = useState(false);
   const [categorias, setCategorias] = useState<Categoria[]>([]);
@@ -90,6 +90,7 @@ export default function NovoProduto() {
         volumeMl: form.volumeMl ? Number(form.volumeMl) : null,
         descricao: form.descricao || null,
         estoque: form.estoque ? Number(form.estoque) : 0,
+        ...(form.estoqueMinimo !== '' && { estoqueMinimo: Number(form.estoqueMinimo) }),
       });
       if (foto) {
         try {
@@ -161,6 +162,14 @@ export default function NovoProduto() {
             <label className="field-label">Estoque inicial</label>
             <input className="input" type="number" value={form.estoque} onChange={(e) => campo('estoque', e.target.value)} />
           </div>
+        </div>
+        <div>
+          <label className="field-label" htmlFor="estoque-minimo">Estoque mínimo (alerta)</label>
+          <input
+            id="estoque-minimo" className="input" type="number" min={0} max={9999} placeholder="5"
+            value={form.estoqueMinimo} onChange={(e) => campo('estoqueMinimo', e.target.value)}
+          />
+          <p className="text-xs text-muted mt-1">Você é avisado quando o estoque chegar a este número ou menos. Se deixar em branco, usa 5.</p>
         </div>
         <div>
           <label className="field-label">Descrição</label>

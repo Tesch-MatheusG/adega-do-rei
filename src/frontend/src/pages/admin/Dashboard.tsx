@@ -4,8 +4,7 @@ import { listarProdutos } from '../../services/produtosService';
 import { listarReservas } from '../../services/reservasService';
 import type { Produto } from '../../types';
 import { formatarPreco } from '../../lib/format';
-
-const ESTOQUE_MINIMO = 5;
+import { statusEstoque } from '../../lib/estoque';
 
 export default function Dashboard() {
   const [produtos, setProdutos] = useState<Produto[]>([]);
@@ -19,7 +18,7 @@ export default function Dashboard() {
   }, []);
 
   const totalProdutos = produtos.length;
-  const alertasEstoque = produtos.filter((p) => p.estoque <= ESTOQUE_MINIMO).length;
+  const alertasEstoque = produtos.filter((p) => statusEstoque(p).alerta).length;
   const valorEstoque = produtos.reduce((soma, p) => soma + Number(p.preco) * p.estoque, 0);
 
   return (
@@ -43,9 +42,7 @@ export default function Dashboard() {
           <div key={p.id} className="flex items-center justify-between px-4 py-3 text-sm">
             <span>{p.nome}</span>
             <span className="text-muted">{p.estoque} un.</span>
-            <span className={p.estoque <= ESTOQUE_MINIMO ? 'badge-danger' : 'badge-success'}>
-              {p.estoque <= ESTOQUE_MINIMO ? 'Estoque Baixo' : 'Em Estoque'}
-            </span>
+            <span className={statusEstoque(p).classe}>{statusEstoque(p).rotulo}</span>
           </div>
         ))}
       </div>

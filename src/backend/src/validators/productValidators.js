@@ -42,6 +42,8 @@ const preco = (obrigatorio) => {
 };
 
 const volumeMl = body('volumeMl').optional(opt).isInt({ min: 1 }).withMessage('Volume deve ser um inteiro positivo (ml).').toInt();
+// Limite do alerta de estoque baixo (por produto). 0 = só alerta quando acabar.
+const estoqueMinimo = body('estoqueMinimo').optional(opt).isInt({ min: 0, max: 9999 }).withMessage('Estoque mínimo deve ser um inteiro de 0 a 9999.').toInt();
 const descricao = body('descricao').optional(opt).customSanitizer(emptyToNull);
 
 const createRules = [
@@ -50,11 +52,12 @@ const createRules = [
   preco(true),
   volumeMl,
   descricao,
+  estoqueMinimo,
   body('estoque').optional(opt).isInt({ min: 0 }).withMessage('Estoque não pode ser negativo.').toInt(),
 ];
 
 // Na atualização todos os campos são opcionais
-const updateRules = [idRule, nome(false), categoria(false), preco(false), volumeMl, descricao];
+const updateRules = [idRule, nome(false), categoria(false), preco(false), volumeMl, descricao, estoqueMinimo];
 
 const idOnlyRules = [idRule];
 

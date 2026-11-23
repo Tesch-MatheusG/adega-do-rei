@@ -35,7 +35,7 @@ async function buscar(req, res) {
 // Produto + movimentação do estoque inicial gravados na MESMA transação (RN06, RNF10)
 async function criar(req, res) {
   try {
-    const { nome, preco, volumeMl, descricao, estoque } = req.body;
+    const { nome, preco, volumeMl, descricao, estoque, estoqueMinimo } = req.body;
     const categoria = req.categoriaOficial; // nome oficial, já conferido no validator
 
     // Duplicidade ignorando maiúsculas/minúsculas (não depende da collation do banco)
@@ -53,7 +53,7 @@ async function criar(req, res) {
 
     const produto = await sequelize.transaction(async (t) => {
       const novo = await Product.create(
-        { nome, categoria, preco, volumeMl, descricao, estoque: estoque ?? 0 },
+        { nome, categoria, preco, volumeMl, descricao, estoque: estoque ?? 0, ...(estoqueMinimo != null && { estoqueMinimo }) },
         { transaction: t }
       );
       if (novo.estoque > 0) {
@@ -85,8 +85,9 @@ async function atualizar(req, res) {
     // Só atualiza campos permitidos e realmente enviados (estoque muda pela rota de entrada).
     // Campo ausente = mantém o valor atual; evita gravar undefined/NULL por engano.
     const campos = {};
-    for (const campo of ['nome', 'categoria', 'preco', 'volumeMl', 'descricao']) {
+    for (const campo of ['nome', 'categoria', 'preco', 'volumeMl', 'descricao', 'estoqueMinimo']) {
       if (req.body[campo] === undefined) continue;
+      if (campo === 'estoqueMinimo' && req.body[campo] === null) continue; // coluna obrigatória: null = mantém
       if (campo === 'categoria') {
         if (req.categoriaOficial) campos.categoria = req.categoriaOficial; // null/ausente = mantém
         continue;

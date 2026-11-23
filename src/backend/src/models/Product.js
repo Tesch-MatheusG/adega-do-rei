@@ -21,6 +21,13 @@ const Product = sequelize.define(
       defaultValue: 0,
       validate: { min: 0 },
     },
+    // Limite do alerta de estoque baixo, definido por produto (5 Royal Salute é muito; 5 Heineken é pouco)
+    estoqueMinimo: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 5,
+      validate: { min: 0 },
+    },
     // "Exclusão lógica": o produto some do catálogo, mas o histórico é mantido
     ativo: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: true },
   },

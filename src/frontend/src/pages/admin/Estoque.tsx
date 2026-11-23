@@ -1,14 +1,13 @@
 import { useEffect, useRef, useState, type ChangeEvent } from 'react';
 import { Link } from 'react-router-dom';
-import { listarProdutos, registrarEntradaEstoque, enviarImagemProduto, removerImagemProduto } from '../../services/produtosService';
+import { listarProdutos, atualizarProduto, registrarEntradaEstoque, enviarImagemProduto, removerImagemProduto } from '../../services/produtosService';
 import { prepararImagem } from '../../lib/imagem';
 import ProdutoImagem from '../../components/ProdutoImagem';
 import BaixaEstoqueModal from '../../components/BaixaEstoqueModal';
 import HistoricoEstoqueModal from '../../components/HistoricoEstoqueModal';
 import type { Produto } from '../../types';
 import { formatarPreco } from '../../lib/format';
-
-const ESTOQUE_MINIMO = 5;
+import { statusEstoque } from '../../lib/estoque';
 
 export default function Estoque() {
   const [produtos, setProdutos] = useState<Produto[]>([]);
@@ -56,6 +55,22 @@ export default function Estoque() {
     }
   }
 
+  async function alterarMinimo(p: Produto) {
+    const valor = window.prompt(`Avisar quando o estoque de "${p.nome}" chegar a quantas unidades (ou menos)?`, String(p.estoqueMinimo));
+    if (valor === null || valor.trim() === '') return;
+    const minimo = Number(valor);
+    if (!Number.isInteger(minimo) || minimo < 0 || minimo > 9999) {
+      alert('Informe um número inteiro de 0 a 9999.');
+      return;
+    }
+    try {
+      await atualizarProduto(p.id, { estoqueMinimo: minimo });
+      carregar();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Não foi possível alterar o estoque mínimo.');
+    }
+  }
+
   async function registrarEntrada(id: number) {
     const valor = window.prompt('Quantidade recebida do fornecedor:');
     const quantidade = Number(valor);
@@ -87,6 +102,7 @@ export default function Estoque() {
               <th className="p-3 font-normal">Categoria</th>
               <th className="p-3 font-normal">Preço</th>
               <th className="p-3 font-normal">Estoque</th>
+              <th className="p-3 font-normal">Mínimo</th>
               <th className="p-3 font-normal">Status</th>
               <th className="p-3 font-normal">Ações</th>
             </tr>
@@ -103,15 +119,15 @@ export default function Estoque() {
                 <td className="p-3 text-muted">{p.categoria}</td>
                 <td className="p-3">{formatarPreco(p.preco)}</td>
                 <td className="p-3">{p.estoque} un.</td>
+                <td className="p-3 text-muted">{p.estoqueMinimo} un.</td>
                 <td className="p-3">
-                  <span className={p.estoque <= ESTOQUE_MINIMO ? 'badge-danger' : 'badge-success'}>
-                    {p.estoque <= ESTOQUE_MINIMO ? 'Estoque Baixo' : 'Em Estoque'}
-                  </span>
+                  <span className={statusEstoque(p).classe}>{statusEstoque(p).rotulo}</span>
                 </td>
                 <td className="p-3">
                   <div className="flex flex-wrap gap-x-4 gap-y-1">
                     <button className="text-gold hover:underline" onClick={() => registrarEntrada(p.id)}>+ Entrada</button>
                     <button className="text-gold hover:underline disabled:opacity-50" disabled={p.estoque === 0} onClick={() => setBaixando(p)}>− Baixa</button>
+                    <button className="text-gold hover:underline" onClick={() => alterarMinimo(p)}>Alterar mínimo</button>
                     <button className="text-gold hover:underline" onClick={() => setVerHistorico(p)}>Histórico</button>
                     <button className="text-gold hover:underline disabled:opacity-50" disabled={ocupado === p.id} onClick={() => escolherFoto(p.id)}>
                       {ocupado === p.id ? 'Enviando...' : p.imagemUrl ? 'Trocar foto' : '+ Foto'}

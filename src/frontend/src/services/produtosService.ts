@@ -26,7 +26,7 @@ export async function buscarProduto(id: number): Promise<Produto | null> {
   }
 }
 
-export async function criarProduto(dados: Omit<Produto, 'id' | 'ativo'>): Promise<Produto> {
+export async function criarProduto(dados: Omit<Produto, 'id' | 'ativo' | 'estoqueMinimo'> & { estoqueMinimo?: number }): Promise<Produto> {
   try {
     const res = await api.post<Produto>('/produtos', dados);
     return res.data;
