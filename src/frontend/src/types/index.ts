@@ -17,6 +17,7 @@ export interface Produto {
   volumeMl: number | null;
   descricao: string | null;
   estoque: number;
+  estoqueMinimo: number; // limite do alerta de estoque baixo (por produto)
   ativo: boolean;
   imagemUrl?: string | null; // caminho da foto (relativo à API); null = sem foto
 }

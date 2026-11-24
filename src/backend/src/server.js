@@ -3,6 +3,7 @@ const app = require('./app');
 const { sequelize } = require('./models');
 const { iniciarAgendadorExpiracao } = require('./services/reservaService');
 const { sincronizarCategorias } = require('./services/categoriaService');
+const { aplicarMigracoes } = require('./services/migracaoService');
 
 const PORT = process.env.PORT || 3000;
 
@@ -13,6 +14,10 @@ async function start() {
 
     // Cria/atualiza as tabelas a partir dos Models (suficiente para o PI)
     await sequelize.sync();
+
+    // sync() não altera tabelas existentes: cria colunas novas que o banco ainda não tem
+    const colunas = await aplicarMigracoes();
+    if (colunas > 0) console.log(`Migração: ${colunas} coluna(s) nova(s) criada(s).`);
 
     // Garante que as categorias dos produtos já existentes estejam na lista oficial
     const novas = await sincronizarCategorias();
