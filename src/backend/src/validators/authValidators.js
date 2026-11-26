@@ -41,4 +41,34 @@ const loginRules = [
   body('senha').notEmpty().withMessage('Senha é obrigatória.'),
 ];
 
-module.exports = { registerRules, loginRules };
+const senhaNova = (campo) =>
+  body(campo)
+    .isLength({ min: 8 }).withMessage('A nova senha deve ter no mínimo 8 caracteres.')
+    .matches(/[A-Za-z]/).withMessage('A nova senha deve conter ao menos uma letra.')
+    .matches(/\d/).withMessage('A nova senha deve conter ao menos um número.');
+
+// Edição do próprio perfil: só nome e e-mail. CPF, data de nascimento e papel NUNCA são aceitos aqui
+// (o controller ignora qualquer outro campo do body).
+const updateProfileRules = [
+  body('nome')
+    .optional()
+    .customSanitizer(cleanText)
+    .notEmpty().withMessage('Nome não pode ficar vazio.')
+    .isLength({ min: 3, max: 100 }).withMessage('Nome deve ter de 3 a 100 caracteres.'),
+
+  body('email')
+    .optional()
+    .trim()
+    .isEmail().withMessage('E-mail inválido.')
+    .normalizeEmail(),
+
+  // Trocar o e-mail (que é o login) exige confirmar a senha atual; o controller confere
+  body('senhaAtual').optional().isString().withMessage('Senha atual inválida.'),
+];
+
+const changePasswordRules = [
+  body('senhaAtual').isString().notEmpty().withMessage('Informe a senha atual.'),
+  senhaNova('novaSenha'),
+];
+
+module.exports = { registerRules, loginRules, updateProfileRules, changePasswordRules };

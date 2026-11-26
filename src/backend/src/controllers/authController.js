@@ -74,4 +74,63 @@ async function me(req, res) {
   }
 }
 
-module.exports = { register, login, me };
+// PATCH /api/auth/me  (rota protegida) - o próprio usuário edita nome e/ou e-mail.
+// Só esses dois campos são lidos: CPF, nascimento e papel não mudam por aqui (RN01/RN02).
+async function atualizarPerfil(req, res) {
+  try {
+    const { nome, email, senhaAtual } = req.body;
+    if (nome === undefined && email === undefined) {
+      return res.status(400).json({ erro: 'Informe o nome ou o e-mail a ser alterado.' });
+    }
+
+    const user = await User.scope('comSenha').findByPk(req.user.id);
+    if (!user) return res.status(404).json({ erro: 'Usuário não encontrado.' });
+
+    const campos = {};
+    if (nome !== undefined) campos.nome = nome;
+
+    if (email !== undefined && email !== user.email) {
+      // O e-mail é o login: trocar exige a senha atual, para que um token roubado não consiga mudá-lo
+      if (!senhaAtual || !(await bcrypt.compare(senhaAtual, user.senha))) {
+        return res.status(403).json({ erro: 'Para alterar o e-mail, informe sua senha atual corretamente.' });
+      }
+      const emUso = await User.findOne({ where: { email, id: { [Op.ne]: user.id } } });
+      if (emUso) return res.status(409).json({ erro: 'Esse e-mail já está em uso por outra conta.' });
+      campos.email = email;
+    }
+
+    await user.update(campos);
+    return res.json(await User.findByPk(user.id)); // sem o hash da senha
+  } catch (err) {
+    // Duas requisições juntas com o mesmo e-mail: o índice único barra
+    if (err.name === 'SequelizeUniqueConstraintError') {
+      return res.status(409).json({ erro: 'Esse e-mail já está em uso por outra conta.' });
+    }
+    console.error(err);
+    return res.status(500).json({ erro: 'Erro interno ao atualizar o perfil.' });
+  }
+}
+
+// PATCH /api/auth/senha  (rota protegida) - troca de senha com confirmação da atual
+async function alterarSenha(req, res) {
+  try {
+    const { senhaAtual, novaSenha } = req.body;
+    const user = await User.scope('comSenha').findByPk(req.user.id);
+    if (!user) return res.status(404).json({ erro: 'Usuário não encontrado.' });
+
+    if (!(await bcrypt.compare(senhaAtual, user.senha))) {
+      return res.status(403).json({ erro: 'Senha atual incorreta.' });
+    }
+    if (senhaAtual === novaSenha) {
+      return res.status(400).json({ erro: 'A nova senha deve ser diferente da atual.' });
+    }
+
+    await user.update({ senha: await bcrypt.hash(novaSenha, SALT_ROUNDS) });
+    return res.json({ mensagem: 'Senha alterada com sucesso.' });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ erro: 'Erro interno ao alterar a senha.' });
+  }
+}
+
+module.exports = { register, login, me, atualizarPerfil, alterarSenha };
