@@ -38,3 +38,21 @@ export async function me(): Promise<Usuario> {
     throw new Error(getErrorMessage(err));
   }
 }
+
+// Edita o próprio perfil. Trocar o e-mail exige a senha atual (o e-mail é o login).
+export async function atualizarPerfil(dados: { nome?: string; email?: string; senhaAtual?: string }): Promise<Usuario> {
+  try {
+    const res = await api.patch<Usuario>('/auth/me', dados);
+    return res.data;
+  } catch (err) {
+    throw new Error(getErrorMessage(err));
+  }
+}
+
+export async function alterarSenha(senhaAtual: string, novaSenha: string): Promise<void> {
+  try {
+    await api.patch('/auth/senha', { senhaAtual, novaSenha });
+  } catch (err) {
+    throw new Error(getErrorMessage(err));
+  }
+}

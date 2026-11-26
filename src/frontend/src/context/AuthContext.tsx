@@ -7,6 +7,7 @@ interface AuthContextValue {
   carregando: boolean;
   login: (email: string, senha: string) => Promise<void>;
   logout: () => void;
+  atualizarUsuario: (u: Usuario) => void; // após editar o perfil, mantém o nome/e-mail do cabeçalho em dia
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -38,7 +39,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ usuario, carregando, login, logout }}>
+    <AuthContext.Provider value={{ usuario, carregando, login, logout, atualizarUsuario: setUsuario }}>
       {children}
     </AuthContext.Provider>
   );
