@@ -4,6 +4,7 @@ const authRoutes = require('./routes/authRoutes');
 const productRoutes = require('./routes/productRoutes');
 const reservaRoutes = require('./routes/reservaRoutes');
 const categoriaRoutes = require('./routes/categoriaRoutes');
+const relatorioRoutes = require('./routes/relatorioRoutes');
 
 const app = express();
 
@@ -21,6 +22,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/produtos', productRoutes);
 app.use('/api/categorias', categoriaRoutes);
 app.use('/api/reservas', reservaRoutes);
+app.use('/api/relatorios', relatorioRoutes);
 
 // Rota inexistente
 app.use((req, res) => res.status(404).json({ erro: 'Rota não encontrada.' }));

@@ -65,3 +65,13 @@ export interface Movimentacao {
   motivo: string | null;
   createdAt: string;
 }
+
+// Linha do relatório "mais reservados" (painel do admin)
+export interface ProdutoMaisReservado {
+  produtoId: number;
+  nome: string;
+  categoria: string;
+  estoque: number;
+  unidades: number; // soma das unidades reservadas
+  reservas: number; // em quantas reservas o produto apareceu
+}
