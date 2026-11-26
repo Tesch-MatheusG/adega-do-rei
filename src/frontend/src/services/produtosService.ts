@@ -1,0 +1,105 @@
+import { api, getErrorMessage } from '../lib/api';
+import type { Movimentacao, Produto } from '../types';
+
+// Chama o backend de verdade (Node/Express + MySQL). As assinaturas destas
+// funções são as mesmas usadas quando o projeto rodava com dados simulados
+// (antigo src/services/mockDb.ts) — por isso nenhuma página precisou mudar.
+
+export async function listarProdutos(filtroCategoria?: string): Promise<Produto[]> {
+  try {
+    const res = await api.get<Produto[]>('/produtos', {
+      params: filtroCategoria ? { categoria: filtroCategoria } : undefined,
+    });
+    return res.data;
+  } catch (err) {
+    throw new Error(getErrorMessage(err));
+  }
+}
+
+// Sugestões da página do produto: os mais reservados que estão disponíveis (a API completa com outros se faltar).
+export async function listarSugestoes(excluirId: number, limite = 3): Promise<Produto[]> {
+  try {
+    const res = await api.get<Produto[]>('/produtos/mais-reservados', { params: { excluir: excluirId, limite } });
+    return res.data;
+  } catch (err) {
+    throw new Error(getErrorMessage(err));
+  }
+}
+
+export async function buscarProduto(id: number): Promise<Produto | null> {
+  try {
+    const res = await api.get<Produto>(`/produtos/${id}`);
+    return res.data;
+  } catch (err) {
+    // 404 do backend vira "não encontrado" (null), e não um erro quebrando a tela
+    return null;
+  }
+}
+
+export async function criarProduto(dados: Omit<Produto, 'id' | 'ativo' | 'estoqueMinimo'> & { estoqueMinimo?: number }): Promise<Produto> {
+  try {
+    const res = await api.post<Produto>('/produtos', dados);
+    return res.data;
+  } catch (err) {
+    throw new Error(getErrorMessage(err));
+  }
+}
+
+export async function atualizarProduto(id: number, dados: Partial<Produto>): Promise<Produto> {
+  try {
+    const res = await api.put<Produto>(`/produtos/${id}`, dados);
+    return res.data;
+  } catch (err) {
+    throw new Error(getErrorMessage(err));
+  }
+}
+
+export async function registrarEntradaEstoque(id: number, quantidade: number): Promise<Produto> {
+  try {
+    const res = await api.patch<{ produto: Produto }>(`/produtos/${id}/estoque`, { quantidade });
+    return res.data.produto;
+  } catch (err) {
+    throw new Error(getErrorMessage(err));
+  }
+}
+
+export type MotivoBaixa = 'quebra' | 'perda' | 'vencimento' | 'furto' | 'outro';
+
+// Baixa manual (quebra, perda...). Os motivos são os mesmos aceitos pelo backend.
+export async function registrarBaixaEstoque(id: number, dados: { quantidade: number; motivo: MotivoBaixa; observacao?: string }): Promise<Produto> {
+  try {
+    const res = await api.patch<{ produto: Produto }>(`/produtos/${id}/baixa`, dados);
+    return res.data.produto;
+  } catch (err) {
+    throw new Error(getErrorMessage(err));
+  }
+}
+
+export async function listarMovimentacoes(id: number): Promise<Movimentacao[]> {
+  try {
+    const res = await api.get<Movimentacao[]>(`/produtos/${id}/movimentacoes`);
+    return res.data;
+  } catch (err) {
+    throw new Error(getErrorMessage(err));
+  }
+}
+
+// Envia (ou troca) a foto do produto. O arquivo já deve ter passado por prepararImagem().
+export async function enviarImagemProduto(id: number, imagem: Blob): Promise<Produto> {
+  try {
+    const form = new FormData();
+    form.append('imagem', imagem, imagem.type === 'image/webp' ? 'foto.webp' : 'foto.jpg');
+    const res = await api.put<Produto>(`/produtos/${id}/imagem`, form);
+    return res.data;
+  } catch (err) {
+    throw new Error(getErrorMessage(err));
+  }
+}
+
+export async function removerImagemProduto(id: number): Promise<void> {
+  try {
+    await api.delete(`/produtos/${id}/imagem`);
+  } catch (err) {
+    throw new Error(getErrorMessage(err));
+  }
+}

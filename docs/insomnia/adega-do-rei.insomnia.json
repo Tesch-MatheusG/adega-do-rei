@@ -1,0 +1,671 @@
+{
+  "_type": "export",
+  "__export_format": 4,
+  "__export_date": "2026-11-11T18:00:00.000Z",
+  "__export_source": "insomnia.desktop.app:v10",
+  "resources": [
+    {
+      "_id": "wrk_adega",
+      "_type": "workspace",
+      "parentId": null,
+      "name": "Adega do Rei - API",
+      "description": "Coleção de requisições da API (auth, categorias, produtos, reservas). Escolha o ambiente Local ou Nuvem no canto superior esquerdo.",
+      "scope": "collection"
+    },
+    {
+      "_id": "env_base",
+      "_type": "environment",
+      "parentId": "wrk_adega",
+      "name": "Base Environment",
+      "isPrivate": false,
+      "metaSortKey": 1,
+      "data": {
+        "admin_email": "admin@adega.com",
+        "admin_senha": "TROQUE_PELA_SENHA_DO_ADMIN",
+        "cliente_email": "cliente@teste.com",
+        "cliente_senha": "Senha1234",
+        "produto_id": 1,
+        "reserva_id": 1
+      }
+    },
+    {
+      "_id": "env_local",
+      "_type": "environment",
+      "parentId": "env_base",
+      "name": "Local",
+      "isPrivate": false,
+      "metaSortKey": 2,
+      "data": {
+        "base_url": "http://localhost:3000/api"
+      }
+    },
+    {
+      "_id": "env_nuvem",
+      "_type": "environment",
+      "parentId": "env_base",
+      "name": "Nuvem (Render)",
+      "isPrivate": false,
+      "metaSortKey": 3,
+      "data": {
+        "base_url": "https://adega-do-rei.onrender.com/api"
+      }
+    },
+    {
+      "_id": "fld_auth",
+      "_type": "request_group",
+      "parentId": "wrk_adega",
+      "name": "1. Autenticação",
+      "description": "Cadastro, login (gera o token JWT) e rota protegida.",
+      "metaSortKey": 1000
+    },
+    {
+      "_id": "req_register",
+      "_type": "request",
+      "parentId": "fld_auth",
+      "name": "Cadastrar cliente",
+      "method": "POST",
+      "url": "{{ _.base_url }}/auth/register",
+      "description": "Público. Esperado: 201. Repetir o e-mail/CPF retorna 409.",
+      "metaSortKey": 2000,
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "parameters": [],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"nome\": \"Cliente Teste\",\n  \"email\": \"{{ _.cliente_email }}\",\n  \"cpf\": \"111.444.777-35\",\n  \"dataNascimento\": \"1995-05-20\",\n  \"senha\": \"{{ _.cliente_senha }}\"\n}"
+      },
+      "authentication": {}
+    },
+    {
+      "_id": "req_register_invalido",
+      "_type": "request",
+      "parentId": "fld_auth",
+      "name": "Cadastrar com CPF inválido (erro 400)",
+      "method": "POST",
+      "url": "{{ _.base_url }}/auth/register",
+      "description": "Demonstra a validação. Esperado: 400 com a lista de erros.",
+      "metaSortKey": 3000,
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "parameters": [],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"nome\": \"Fulano\",\n  \"email\": \"fulano@teste.com\",\n  \"cpf\": \"123.456.789-00\",\n  \"dataNascimento\": \"1995-05-20\",\n  \"senha\": \"Senha1234\"\n}"
+      },
+      "authentication": {}
+    },
+    {
+      "_id": "req_register_menor",
+      "_type": "request",
+      "parentId": "fld_auth",
+      "name": "Cadastrar menor de 18 anos (erro 400)",
+      "method": "POST",
+      "url": "{{ _.base_url }}/auth/register",
+      "description": "Regra de negócio: só maiores de 18. Esperado: 400.",
+      "metaSortKey": 4000,
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "parameters": [],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"nome\": \"Menor Teste\",\n  \"email\": \"menor@teste.com\",\n  \"cpf\": \"529.982.247-25\",\n  \"dataNascimento\": \"2015-01-10\",\n  \"senha\": \"Senha1234\"\n}"
+      },
+      "authentication": {}
+    },
+    {
+      "_id": "req_login_admin",
+      "_type": "request",
+      "parentId": "fld_auth",
+      "name": "Login ADMIN (gera o token)",
+      "method": "POST",
+      "url": "{{ _.base_url }}/auth/login",
+      "description": "Esperado: 200 com { token, usuario }. As requisições de admin reaproveitam este token automaticamente — rode esta primeiro.",
+      "metaSortKey": 5000,
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "parameters": [],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"email\": \"{{ _.admin_email }}\",\n  \"senha\": \"{{ _.admin_senha }}\"\n}"
+      },
+      "authentication": {}
+    },
+    {
+      "_id": "req_login_cliente",
+      "_type": "request",
+      "parentId": "fld_auth",
+      "name": "Login CLIENTE (gera o token)",
+      "method": "POST",
+      "url": "{{ _.base_url }}/auth/login",
+      "description": "Esperado: 200. As requisições de cliente reaproveitam este token — rode esta primeiro.",
+      "metaSortKey": 6000,
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "parameters": [],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"email\": \"{{ _.cliente_email }}\",\n  \"senha\": \"{{ _.cliente_senha }}\"\n}"
+      },
+      "authentication": {}
+    },
+    {
+      "_id": "req_login_errado",
+      "_type": "request",
+      "parentId": "fld_auth",
+      "name": "Login com senha errada (erro 401)",
+      "method": "POST",
+      "url": "{{ _.base_url }}/auth/login",
+      "description": "Esperado: 401.",
+      "metaSortKey": 7000,
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "parameters": [],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"email\": \"{{ _.cliente_email }}\",\n  \"senha\": \"senhaerrada1\"\n}"
+      },
+      "authentication": {}
+    },
+    {
+      "_id": "req_me",
+      "_type": "request",
+      "parentId": "fld_auth",
+      "name": "Meus dados (Bearer token)",
+      "method": "GET",
+      "url": "{{ _.base_url }}/auth/me",
+      "description": "Rota protegida. Esperado: 200. Sem token: 401.",
+      "metaSortKey": 8000,
+      "headers": [],
+      "parameters": [],
+      "authentication": {
+        "type": "bearer",
+        "token": "{% response 'body', 'req_login_cliente', 'b64::JC50b2tlbg==::46b', 'never', 60 %}"
+      }
+    },
+    {
+      "_id": "req_me_semtoken",
+      "_type": "request",
+      "parentId": "fld_auth",
+      "name": "Meus dados SEM token (erro 401)",
+      "method": "GET",
+      "url": "{{ _.base_url }}/auth/me",
+      "description": "Demonstra o verifyToken. Esperado: 401 'Token não fornecido.'",
+      "metaSortKey": 9000,
+      "headers": [],
+      "parameters": [],
+      "authentication": {}
+    },
+    {
+      "_id": "fld_cat",
+      "_type": "request_group",
+      "parentId": "wrk_adega",
+      "name": "2. Categorias",
+      "description": "",
+      "metaSortKey": 10000
+    },
+    {
+      "_id": "req_cat_list",
+      "_type": "request",
+      "parentId": "fld_cat",
+      "name": "Listar categorias",
+      "method": "GET",
+      "url": "{{ _.base_url }}/categorias",
+      "description": "Pública. Esperado: 200.",
+      "metaSortKey": 11000,
+      "headers": [],
+      "parameters": [],
+      "authentication": {}
+    },
+    {
+      "_id": "req_cat_create",
+      "_type": "request",
+      "parentId": "fld_cat",
+      "name": "Criar categoria (admin)",
+      "method": "POST",
+      "url": "{{ _.base_url }}/categorias",
+      "description": "Só admin. Esperado: 201. Nome repetido (sem diferenciar maiúsculas): 409.",
+      "metaSortKey": 12000,
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "parameters": [],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"nome\": \"Licores\"\n}"
+      },
+      "authentication": {
+        "type": "bearer",
+        "token": "{% response 'body', 'req_login_admin', 'b64::JC50b2tlbg==::46b', 'never', 60 %}"
+      }
+    },
+    {
+      "_id": "req_cat_cliente",
+      "_type": "request",
+      "parentId": "fld_cat",
+      "name": "Criar categoria como cliente (erro 403)",
+      "method": "POST",
+      "url": "{{ _.base_url }}/categorias",
+      "description": "Demonstra o isAdmin. Esperado: 403.",
+      "metaSortKey": 13000,
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "parameters": [],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"nome\": \"Licores\"\n}"
+      },
+      "authentication": {
+        "type": "bearer",
+        "token": "{% response 'body', 'req_login_cliente', 'b64::JC50b2tlbg==::46b', 'never', 60 %}"
+      }
+    },
+    {
+      "_id": "fld_prod",
+      "_type": "request_group",
+      "parentId": "wrk_adega",
+      "name": "3. Produtos e estoque",
+      "description": "",
+      "metaSortKey": 14000
+    },
+    {
+      "_id": "req_prod_list",
+      "_type": "request",
+      "parentId": "fld_prod",
+      "name": "Listar produtos",
+      "method": "GET",
+      "url": "{{ _.base_url }}/produtos",
+      "description": "Pública. Esperado: 200.",
+      "metaSortKey": 15000,
+      "headers": [],
+      "parameters": [],
+      "authentication": {}
+    },
+    {
+      "_id": "req_prod_get",
+      "_type": "request",
+      "parentId": "fld_prod",
+      "name": "Buscar produto por ID",
+      "method": "GET",
+      "url": "{{ _.base_url }}/produtos/{{ _.produto_id }}",
+      "description": "Pública. 200, ou 404 se não existir.",
+      "metaSortKey": 16000,
+      "headers": [],
+      "parameters": [],
+      "authentication": {}
+    },
+    {
+      "_id": "req_prod_create",
+      "_type": "request",
+      "parentId": "fld_prod",
+      "name": "Criar produto (admin)",
+      "method": "POST",
+      "url": "{{ _.base_url }}/produtos",
+      "description": "Esperado: 201. Anote o id retornado e coloque em produto_id no ambiente.",
+      "metaSortKey": 17000,
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "parameters": [],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"nome\": \"Vinho Tinto Reserva\",\n  \"categoria\": \"Vinhos\",\n  \"preco\": 89.9,\n  \"volumeMl\": 750,\n  \"descricao\": \"Vinho tinto encorpado.\",\n  \"estoque\": 12\n}"
+      },
+      "authentication": {
+        "type": "bearer",
+        "token": "{% response 'body', 'req_login_admin', 'b64::JC50b2tlbg==::46b', 'never', 60 %}"
+      }
+    },
+    {
+      "_id": "req_prod_invalid",
+      "_type": "request",
+      "parentId": "fld_prod",
+      "name": "Criar produto com preço inválido (erro 400)",
+      "method": "POST",
+      "url": "{{ _.base_url }}/produtos",
+      "description": "Esperado: 400 'Preço deve ser maior que zero.'",
+      "metaSortKey": 18000,
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "parameters": [],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"nome\": \"Teste\",\n  \"categoria\": \"Vinhos\",\n  \"preco\": -5\n}"
+      },
+      "authentication": {
+        "type": "bearer",
+        "token": "{% response 'body', 'req_login_admin', 'b64::JC50b2tlbg==::46b', 'never', 60 %}"
+      }
+    },
+    {
+      "_id": "req_prod_cliente",
+      "_type": "request",
+      "parentId": "fld_prod",
+      "name": "Criar produto como cliente (erro 403)",
+      "method": "POST",
+      "url": "{{ _.base_url }}/produtos",
+      "description": "Esperado: 403.",
+      "metaSortKey": 19000,
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "parameters": [],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"nome\": \"Teste\",\n  \"categoria\": \"Vinhos\",\n  \"preco\": 10\n}"
+      },
+      "authentication": {
+        "type": "bearer",
+        "token": "{% response 'body', 'req_login_cliente', 'b64::JC50b2tlbg==::46b', 'never', 60 %}"
+      }
+    },
+    {
+      "_id": "req_prod_put",
+      "_type": "request",
+      "parentId": "fld_prod",
+      "name": "Atualizar produto (admin)",
+      "method": "PUT",
+      "url": "{{ _.base_url }}/produtos/{{ _.produto_id }}",
+      "description": "Campos opcionais. Esperado: 200.",
+      "metaSortKey": 20000,
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "parameters": [],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"preco\": 79.9,\n  \"descricao\": \"Preço promocional.\"\n}"
+      },
+      "authentication": {
+        "type": "bearer",
+        "token": "{% response 'body', 'req_login_admin', 'b64::JC50b2tlbg==::46b', 'never', 60 %}"
+      }
+    },
+    {
+      "_id": "req_prod_estoque",
+      "_type": "request",
+      "parentId": "fld_prod",
+      "name": "Entrada de estoque (admin)",
+      "method": "PATCH",
+      "url": "{{ _.base_url }}/produtos/{{ _.produto_id }}/estoque",
+      "description": "Esperado: 200 e registro no histórico.",
+      "metaSortKey": 21000,
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "parameters": [],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"quantidade\": 10,\n  \"motivo\": \"Reposição do fornecedor\"\n}"
+      },
+      "authentication": {
+        "type": "bearer",
+        "token": "{% response 'body', 'req_login_admin', 'b64::JC50b2tlbg==::46b', 'never', 60 %}"
+      }
+    },
+    {
+      "_id": "req_prod_mov",
+      "_type": "request",
+      "parentId": "fld_prod",
+      "name": "Histórico de movimentações (admin)",
+      "method": "GET",
+      "url": "{{ _.base_url }}/produtos/{{ _.produto_id }}/movimentacoes",
+      "description": "Esperado: 200 com entradas, saídas, reservas e ajustes.",
+      "metaSortKey": 22000,
+      "headers": [],
+      "parameters": [],
+      "authentication": {
+        "type": "bearer",
+        "token": "{% response 'body', 'req_login_admin', 'b64::JC50b2tlbg==::46b', 'never', 60 %}"
+      }
+    },
+    {
+      "_id": "req_prod_img",
+      "_type": "request",
+      "parentId": "fld_prod",
+      "name": "Enviar foto do produto (admin)",
+      "method": "PUT",
+      "url": "{{ _.base_url }}/produtos/{{ _.produto_id }}/imagem",
+      "description": "multipart/form-data, campo 'imagem', até 2 MB. Escolha o arquivo no corpo da requisição.",
+      "metaSortKey": 23000,
+      "headers": [],
+      "parameters": [],
+      "body": {
+        "mimeType": "multipart/form-data",
+        "params": [
+          {
+            "name": "imagem",
+            "type": "file",
+            "fileName": "",
+            "value": "",
+            "description": "Escolha uma foto (JPG/PNG, até 2 MB)"
+          }
+        ]
+      },
+      "authentication": {
+        "type": "bearer",
+        "token": "{% response 'body', 'req_login_admin', 'b64::JC50b2tlbg==::46b', 'never', 60 %}"
+      }
+    },
+    {
+      "_id": "req_prod_img_get",
+      "_type": "request",
+      "parentId": "fld_prod",
+      "name": "Baixar foto do produto",
+      "method": "GET",
+      "url": "{{ _.base_url }}/produtos/{{ _.produto_id }}/imagem",
+      "description": "Pública.",
+      "metaSortKey": 24000,
+      "headers": [],
+      "parameters": [],
+      "authentication": {}
+    },
+    {
+      "_id": "req_prod_img_del",
+      "_type": "request",
+      "parentId": "fld_prod",
+      "name": "Remover foto (admin)",
+      "method": "DELETE",
+      "url": "{{ _.base_url }}/produtos/{{ _.produto_id }}/imagem",
+      "description": "Esperado: 204.",
+      "metaSortKey": 25000,
+      "headers": [],
+      "parameters": [],
+      "authentication": {
+        "type": "bearer",
+        "token": "{% response 'body', 'req_login_admin', 'b64::JC50b2tlbg==::46b', 'never', 60 %}"
+      }
+    },
+    {
+      "_id": "req_prod_del",
+      "_type": "request",
+      "parentId": "fld_prod",
+      "name": "Remover produto (admin, exclusão lógica)",
+      "method": "DELETE",
+      "url": "{{ _.base_url }}/produtos/{{ _.produto_id }}",
+      "description": "Esperado: 204.",
+      "metaSortKey": 26000,
+      "headers": [],
+      "parameters": [],
+      "authentication": {
+        "type": "bearer",
+        "token": "{% response 'body', 'req_login_admin', 'b64::JC50b2tlbg==::46b', 'never', 60 %}"
+      }
+    },
+    {
+      "_id": "fld_res",
+      "_type": "request_group",
+      "parentId": "wrk_adega",
+      "name": "4. Reservas",
+      "description": "",
+      "metaSortKey": 27000
+    },
+    {
+      "_id": "req_res_create",
+      "_type": "request",
+      "parentId": "fld_res",
+      "name": "Criar reserva (cliente)",
+      "method": "POST",
+      "url": "{{ _.base_url }}/reservas",
+      "description": "Esperado: 201 e baixa no estoque. Ajuste a data (máx. 7 dias à frente). Estoque insuficiente: 409.",
+      "metaSortKey": 28000,
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "parameters": [],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"itens\": [\n    {\n      \"produtoId\": \"{{ _.produto_id }}\",\n      \"quantidade\": 2\n    }\n  ],\n  \"retiradaPrevista\": \"2026-11-20T18:00:00-03:00\"\n}"
+      },
+      "authentication": {
+        "type": "bearer",
+        "token": "{% response 'body', 'req_login_cliente', 'b64::JC50b2tlbg==::46b', 'never', 60 %}"
+      }
+    },
+    {
+      "_id": "req_res_minhas",
+      "_type": "request",
+      "parentId": "fld_res",
+      "name": "Minhas reservas (cliente)",
+      "method": "GET",
+      "url": "{{ _.base_url }}/reservas/minhas",
+      "description": "Esperado: 200.",
+      "metaSortKey": 29000,
+      "headers": [],
+      "parameters": [],
+      "authentication": {
+        "type": "bearer",
+        "token": "{% response 'body', 'req_login_cliente', 'b64::JC50b2tlbg==::46b', 'never', 60 %}"
+      }
+    },
+    {
+      "_id": "req_res_all",
+      "_type": "request",
+      "parentId": "fld_res",
+      "name": "Listar todas (admin, filtro por status)",
+      "method": "GET",
+      "url": "{{ _.base_url }}/reservas?status=pendente",
+      "description": "Status: pendente, pronta, retirada, cancelada ou expirada. Admin não vê CPF.",
+      "metaSortKey": 30000,
+      "headers": [],
+      "parameters": [],
+      "authentication": {
+        "type": "bearer",
+        "token": "{% response 'body', 'req_login_admin', 'b64::JC50b2tlbg==::46b', 'never', 60 %}"
+      }
+    },
+    {
+      "_id": "req_res_get",
+      "_type": "request",
+      "parentId": "fld_res",
+      "name": "Buscar reserva por ID (dono ou admin)",
+      "method": "GET",
+      "url": "{{ _.base_url }}/reservas/{{ _.reserva_id }}",
+      "description": "Reserva de outro usuário retorna 404 (proteção contra IDOR).",
+      "metaSortKey": 31000,
+      "headers": [],
+      "parameters": [],
+      "authentication": {
+        "type": "bearer",
+        "token": "{% response 'body', 'req_login_cliente', 'b64::JC50b2tlbg==::46b', 'never', 60 %}"
+      }
+    },
+    {
+      "_id": "req_res_pronta",
+      "_type": "request",
+      "parentId": "fld_res",
+      "name": "Marcar como pronta (admin)",
+      "method": "PATCH",
+      "url": "{{ _.base_url }}/reservas/{{ _.reserva_id }}/pronta",
+      "description": "pendente → pronta.",
+      "metaSortKey": 32000,
+      "headers": [],
+      "parameters": [],
+      "authentication": {
+        "type": "bearer",
+        "token": "{% response 'body', 'req_login_admin', 'b64::JC50b2tlbg==::46b', 'never', 60 %}"
+      }
+    },
+    {
+      "_id": "req_res_retirada",
+      "_type": "request",
+      "parentId": "fld_res",
+      "name": "Confirmar retirada (admin)",
+      "method": "PATCH",
+      "url": "{{ _.base_url }}/reservas/{{ _.reserva_id }}/retirada",
+      "description": "pronta → retirada.",
+      "metaSortKey": 33000,
+      "headers": [],
+      "parameters": [],
+      "authentication": {
+        "type": "bearer",
+        "token": "{% response 'body', 'req_login_admin', 'b64::JC50b2tlbg==::46b', 'never', 60 %}"
+      }
+    },
+    {
+      "_id": "req_res_cancel",
+      "_type": "request",
+      "parentId": "fld_res",
+      "name": "Cancelar reserva (dono ou admin)",
+      "method": "PATCH",
+      "url": "{{ _.base_url }}/reservas/{{ _.reserva_id }}/cancelar",
+      "description": "Devolve o estoque.",
+      "metaSortKey": 34000,
+      "headers": [],
+      "parameters": [],
+      "authentication": {
+        "type": "bearer",
+        "token": "{% response 'body', 'req_login_cliente', 'b64::JC50b2tlbg==::46b', 'never', 60 %}"
+      }
+    }
+  ]
+}
