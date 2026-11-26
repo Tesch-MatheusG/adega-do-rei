@@ -39,11 +39,11 @@ export default function Dashboard() {
       </div>
       <div className="card divide-y divide-border">
         {produtos.slice(0, 5).map((p) => (
-          <div key={p.id} className="flex items-center justify-between px-4 py-3 text-sm">
-            <span>{p.nome}</span>
-            <span className="text-muted">{p.estoque} un.</span>
-            <span className={statusEstoque(p).classe}>{statusEstoque(p).rotulo}</span>
-          </div>
+          <div key={p.id} className="grid grid-cols-3 items-center gap-4 px-4 py-3 text-sm">
+          <span>{p.nome}</span>
+          <span className="text-muted text-center">{p.estoque} un.</span>
+          <span className={`${statusEstoque(p).classe} justify-self-end`}>{statusEstoque(p).rotulo}</span>
+        </div>
         ))}
       </div>
     </div>
