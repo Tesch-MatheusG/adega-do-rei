@@ -5,6 +5,7 @@ import { listarReservas } from '../../services/reservasService';
 import type { Produto } from '../../types';
 import { formatarPreco } from '../../lib/format';
 import { statusEstoque } from '../../lib/estoque';
+import RelatorioMaisReservados from '../../components/RelatorioMaisReservados';
 
 export default function Dashboard() {
   const [produtos, setProdutos] = useState<Produto[]>([]);
@@ -46,6 +47,8 @@ export default function Dashboard() {
         </div>
         ))}
       </div>
+
+      <RelatorioMaisReservados />
     </div>
   );
 }

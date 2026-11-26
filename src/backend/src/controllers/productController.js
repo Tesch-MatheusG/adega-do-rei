@@ -3,6 +3,7 @@ const { Product, StockMovement, sequelize } = require('../models');
 const { normalizeCategoria } = require('../utils/normalize');
 const { detectarTipoImagem } = require('../utils/imagem');
 const imagens = require('../services/imagemService');
+const { sugestoesMaisReservados } = require('../services/relatorioService');
 const { MOTIVOS_BAIXA } = require('../validators/productValidators');
 
 // GET /api/produtos?categoria=Cerveja   (público)
@@ -16,6 +17,18 @@ async function listar(req, res) {
   } catch (err) {
     console.error(err);
     return res.status(500).json({ erro: 'Erro interno ao listar produtos.' });
+  }
+}
+
+// GET /api/produtos/mais-reservados?limite=3&excluir=ID   (público)
+// Sugestões para a página do produto. Não expõe contagens: só os produtos.
+async function maisReservados(req, res) {
+  try {
+    const produtos = await sugestoesMaisReservados({ limite: req.query.limite || 3, excluirId: req.query.excluir });
+    return res.json(await imagens.comImagem(produtos));
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ erro: 'Erro interno ao listar sugestões.' });
   }
 }
 
@@ -259,4 +272,4 @@ async function removerImagem(req, res) {
   }
 }
 
-module.exports = { imagem, salvarImagem, removerImagem, listar, buscar, criar, atualizar, entradaEstoque, baixaEstoque, movimentacoes, remover };
+module.exports = { imagem, salvarImagem, removerImagem, listar, maisReservados, buscar, criar, atualizar, entradaEstoque, baixaEstoque, movimentacoes, remover };

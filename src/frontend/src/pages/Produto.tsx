@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { buscarProduto, listarProdutos } from '../services/produtosService';
+import { buscarProduto, listarSugestoes } from '../services/produtosService';
 import type { Produto } from '../types';
 import { formatarPreco } from '../lib/format';
 import { useCart } from '../context/CartContext';
@@ -23,7 +23,8 @@ export default function ProdutoPage() {
       .then((p) => {
         if (!p) { setErro('Produto não encontrado.'); return; }
         setProduto(p);
-        listarProdutos().then((todos) => setRelacionados(todos.filter((x) => x.id !== p.id).slice(0, 3)));
+        // As 3 bebidas mais reservadas da adega (sem repetir esta). Se falhar, a página funciona sem a seção.
+        listarSugestoes(p.id, 3).then(setRelacionados).catch(() => setRelacionados([]));
       });
   }, [id]);
 

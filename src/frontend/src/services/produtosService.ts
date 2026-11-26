@@ -16,6 +16,16 @@ export async function listarProdutos(filtroCategoria?: string): Promise<Produto[
   }
 }
 
+// Sugestões da página do produto: os mais reservados que estão disponíveis (a API completa com outros se faltar).
+export async function listarSugestoes(excluirId: number, limite = 3): Promise<Produto[]> {
+  try {
+    const res = await api.get<Produto[]>('/produtos/mais-reservados', { params: { excluir: excluirId, limite } });
+    return res.data;
+  } catch (err) {
+    throw new Error(getErrorMessage(err));
+  }
+}
+
 export async function buscarProduto(id: number): Promise<Produto | null> {
   try {
     const res = await api.get<Produto>(`/produtos/${id}`);

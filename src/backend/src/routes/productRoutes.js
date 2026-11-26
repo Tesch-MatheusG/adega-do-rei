@@ -4,10 +4,13 @@ const verifyToken = require('../middlewares/verifyToken');
 const isAdmin = require('../middlewares/isAdmin');
 const validate = require('../middlewares/validate');
 const { uploadImagem } = require('../middlewares/uploadImagem');
+const { sugestoesRules } = require('../validators/relatorioValidators');
 const { createRules, updateRules, idOnlyRules, stockEntryRules, stockWriteOffRules } = require('../validators/productValidators');
 
 // Públicas (catálogo)
 router.get('/', ctrl.listar);
+// Antes de '/:id', senão "mais-reservados" seria lido como id
+router.get('/mais-reservados', sugestoesRules, validate, ctrl.maisReservados);
 router.get('/:id', idOnlyRules, validate, ctrl.buscar);
 router.get('/:id/imagem', idOnlyRules, validate, ctrl.imagem);
 
