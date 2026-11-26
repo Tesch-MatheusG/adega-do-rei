@@ -24,7 +24,10 @@ async function listar(req, res) {
 // Sugestões para a página do produto. Não expõe contagens: só os produtos.
 async function maisReservados(req, res) {
   try {
-    const produtos = await sugestoesMaisReservados({ limite: req.query.limite || 3, excluirId: req.query.excluir });
+    const produtos = await sugestoesMaisReservados({
+  limite: Number(req.query.limite) || 3,
+  excluirId: req.query.excluir ? Number(req.query.excluir) : undefined,
+});
     return res.json(await imagens.comImagem(produtos));
   } catch (err) {
     console.error(err);
