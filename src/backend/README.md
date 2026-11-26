@@ -16,7 +16,7 @@ npm run dev           # sobe em http://localhost:3000
 As tabelas (`usuarios`, `produtos`, `movimentacoes_estoque`) são criadas automaticamente pelo Sequelize (`sync`) na primeira execução.
 
 ```bash
-npm test              # 56 testes de validação, regras de negócio e integridade
+npm test              # 211 testes de validação, regras de negócio e integridade
 ```
 
 ## Estrutura (MVC)
@@ -135,7 +135,7 @@ Tratamento de erros: toda rejeição de validação responde `400` com `{ erro, 
 
 ### Evidências de validação
 
-- `npm test` executa 56 testes (`tests/unit.test.js` e `tests/api.test.js`), todos aprovados. A saída completa está em `docs/evidencias/resultado-testes.txt`.
+- `npm test` executa 211 testes (`tests/unit.test.js` e `tests/api.test.js`), todos aprovados. A saída completa está em `docs/evidencias/resultado-testes.txt`.
 - Os testes de API usam SQLite em memória no lugar do MySQL, para não tocar nos dados da Aiven. Validators, controllers, middlewares e models são os mesmos de produção.
 - Em produção, foram verificados manualmente na nuvem: conexão com a Aiven, criação das tabelas, seed do admin e login pela URL do Render.
 - Cobertura por regra: RN01 (maioridade), RN06 (histórico de estoque), RN07 e RNF03 (acesso por papel), RNF02 (hash e mensagem genérica de login), RNF10 (transação). A tabela completa está em `docs/rn.md`.
